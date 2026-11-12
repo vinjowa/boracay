@@ -198,22 +198,21 @@
         .btn.secondary { background: #6c757d; }
         .btn.secondary:hover { background: #495057; }
 
-        /* 데스크탑 공식 실시간 버스 위치 버튼 바 */
+        /* 데스크탑 공식 실시간 버스 위치 외부 링크 버튼 */
         #live-tracker-row {
             padding: 6px 10px;
             background: #f5f3ff;
             border-bottom: 1px solid #ddd6fe;
         }
-        .live-gps-btn {
+        .live-gps-link {
             width: 100%;
             padding: 8px 10px;
-            border: none;
             border-radius: 7px;
             background: linear-gradient(135deg, #7c3aed, #ec4899);
             color: #ffffff;
+            text-decoration: none;
             font-weight: 800;
-            font-size: 12px;
-            cursor: pointer;
+            font-size: 11.5px;
             box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
             display: flex;
             align-items: center;
@@ -221,8 +220,8 @@
             gap: 6px;
             transition: transform 0.15s, opacity 0.2s;
         }
-        .live-gps-btn:hover { opacity: 0.93; }
-        .live-gps-btn:active { transform: scale(0.98); }
+        .live-gps-link:hover { opacity: 0.93; }
+        .live-gps-link:active { transform: scale(0.98); }
         .pulse-dot {
             width: 8px;
             height: 8px;
@@ -230,6 +229,7 @@
             border-radius: 50%;
             box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.4);
             animation: livePulse 1.4s infinite;
+            flex-shrink: 0;
         }
         @keyframes livePulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.8); }
@@ -362,7 +362,7 @@
         #map { flex: 1; height: 100%; background: #a2d2ff; z-index: 1; }
 
         /* =========================================================
-           2. 하단 플로팅 알약 버튼 그룹 (버스 따라가기 + 실시간 실제버스)
+           2. 하단 플로팅 알약 버튼 그룹 (버스 따라가기 + 실시간 실제버스 새창)
            ========================================================= */
         #bottom-pill-group {
             position: absolute;
@@ -379,6 +379,7 @@
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             color: #ffffff;
+            text-decoration: none;
             border: 1.5px solid rgba(255, 255, 255, 0.35);
             border-radius: 20px;
             padding: 7px 12px;
@@ -404,101 +405,7 @@
         }
 
         /* =========================================================
-           3. 공식 실시간 버스 GPS 모달 창 (앱 내 오버레이)
-           ========================================================= */
-        #live-tracker-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 3000;
-            background: rgba(15, 23, 42, 0.72);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 14px;
-        }
-        #live-tracker-modal.open {
-            display: flex;
-        }
-        .live-modal-box {
-            width: 100%;
-            max-width: 920px;
-            height: 86vh;
-            height: 86dvh;
-            background: #0f172a;
-            border-radius: 16px;
-            border: 1px solid #334155;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .live-modal-header {
-            padding: 10px 14px;
-            background: linear-gradient(135deg, #1e1b4b, #311042);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            border-bottom: 1px solid #334155;
-        }
-        .live-modal-title {
-            font-size: 13.5px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .live-modal-actions {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .live-ext-link {
-            background: #2563eb;
-            color: #fff;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 8px;
-            white-space: nowrap;
-        }
-        .live-close-btn {
-            background: rgba(255,255,255,0.15);
-            color: #fff;
-            border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .live-modal-tip {
-            background: #1e293b;
-            color: #cbd5e1;
-            font-size: 11px;
-            padding: 6px 12px;
-            text-align: center;
-            border-bottom: 1px solid #334155;
-        }
-        .live-iframe-wrap {
-            flex: 1;
-            width: 100%;
-            background: #ffffff;
-            position: relative;
-        }
-        #live-tracker-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* =========================================================
-           4. 모바일 전용 플로팅 UI (데스크탑에서는 숨김)
+           3. 모바일 전용 플로팅 UI (데스크탑에서는 숨김)
            ========================================================= */
         #top-floating-bar,
         #right-stop-dock,
@@ -507,7 +414,7 @@
         }
 
         /* =========================================================
-           5. 공통 지도 마커 디자인
+           4. 공통 지도 마커 디자인
            ========================================================= */
         .custom-stop-marker {
             background: transparent;
@@ -586,7 +493,7 @@
         }
 
         /* =========================================================
-           6. 모바일 화면 (768px 이하): 사이드바 숨기고 플로팅 UI 활성화
+           5. 모바일 화면 (768px 이하): 사이드바 숨기고 플로팅 UI 활성화
            ========================================================= */
         @media (max-width: 768px) {
             #sidebar {
@@ -936,12 +843,12 @@
             <button id="fitBtnDesktop" class="btn secondary">🔍 전체맵</button>
         </div>
 
-        <!-- 데스크탑용 공식 실시간 실제 버스 GPS 버튼 -->
+        <!-- 데스크탑용 공식 실시간 실제 버스 GPS 새창 바로가기 -->
         <div id="live-tracker-row">
-            <button id="openLiveBtnDesktop" class="live-gps-btn">
+            <a href="https://tinyurl.com/findHOHO" target="_blank" rel="noopener noreferrer" class="live-gps-link">
                 <span class="pulse-dot"></span>
-                <span id="ui-live-btn-desk">📡 실제 운행 버스 실시간 GPS 보기 (공식 LIVE)</span>
-            </button>
+                <span id="ui-live-btn-desk">📡 실제 운행 버스 실시간 GPS 보기 (새 창 열기 ↗)</span>
+            </a>
         </div>
 
         <div id="stop-list"></div>
@@ -950,13 +857,13 @@
     <!-- 🗺️ 2. 지도 영역 -->
     <div id="map"></div>
 
-    <!-- 🎯 하단 플로팅 알약 버튼 (버스 따라가기 + 공식 실시간 실제버스 GPS) -->
+    <!-- 🎯 하단 플로팅 알약 버튼 (버스 따라가기 + 공식 실시간 실제버스 GPS 새창 바로가기) -->
     <div id="bottom-pill-group">
         <button id="follow-bus-pill" class="bottom-pill-btn following">🎯 버스 따라가기 ON</button>
-        <button id="live-bus-pill" class="bottom-pill-btn">
+        <a href="https://tinyurl.com/findHOHO" target="_blank" rel="noopener noreferrer" id="live-bus-pill" class="bottom-pill-btn">
             <span class="pulse-dot"></span>
-            <span id="ui-live-btn-mob">📡 실시간 실제버스</span>
-        </button>
+            <span id="ui-live-btn-mob">📡 실시간 실제버스 ↗</span>
+        </a>
     </div>
 
     <!-- 📱 3. 모바일 전용 플로팅 UI (핸드폰에서만 표시) -->
@@ -997,31 +904,7 @@
         <div id="card-tags" class="card-tags"></div>
     </div>
 
-    <!-- 📡 4. 공식 실시간 버스 GPS 트래커 오버레이 모달 -->
-    <div id="live-tracker-modal">
-        <div class="live-modal-box">
-            <div class="live-modal-header">
-                <div class="live-modal-title">
-                    <span class="pulse-dot"></span>
-                    <span id="ui-modal-title">보라카이 HOHO 공식 실시간 버스 GPS</span>
-                </div>
-                <div class="live-modal-actions">
-                    <a href="https://tinyurl.com/findHOHO" target="_blank" rel="noopener" class="live-ext-link" id="ui-modal-ext">↗ 새 창으로 열기</a>
-                    <button id="closeLiveModalBtn" class="live-close-btn">✕</button>
-                </div>
-            </div>
-            <div class="live-modal-tip" id="ui-modal-tip">
-                💡 아래 화면은 호호버스 운영사(Southwest)의 실시간 차량 GPS입니다. 만약 빈 화면으로 보이면 우측 상단 [↗ 새 창으로 열기]를 눌러주세요!
-            </div>
-            <div class="live-iframe-wrap">
-                <iframe id="live-tracker-iframe" src="about:blank" allow="geolocation"></iframe>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const OFFICIAL_LIVE_TRACKER_URL = "https://tinyurl.com/findHOHO";
-
         // 🌐 다국어(KR / EN) 번역 사전
         let currentLang = 'ko'; // 'ko' | 'en'
 
@@ -1053,11 +936,8 @@
                 mobFitMap: "🔍 전체",
                 followOn: "🎯 버스 따라가기 ON",
                 followOff: "🎯 버스 따라가기 OFF",
-                liveBtnDesk: "📡 실제 운행 버스 실시간 GPS 보기 (공식 LIVE)",
-                liveBtnMob: "📡 실시간 실제버스",
-                modalTitle: "보라카이 HOHO 공식 실시간 버스 GPS",
-                modalExt: "↗ 새 창으로 열기",
-                modalTip: "💡 호호버스 운영사(Southwest)의 실시간 차량 GPS입니다. 화면이 안 뜰 경우 우측 상단 [↗ 새 창으로 열기]를 눌러주세요!",
+                liveBtnDesk: "📡 실제 운행 버스 실시간 GPS 보기 (새 창 열기 ↗)",
+                liveBtnMob: "📡 실시간 실제버스 ↗",
                 statusDay: "☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)",
                 statusNight: "🌙 야간 모드: [S21 키홀] 마감 · [푸카/탐비산] 야간 주의사항 확인!",
                 statusXpress: "⚡ 익스프레스 모드: 항구(S1)/탐비산(H0) 미운행 · [S6 이몰 ↔ S23 푸카]만 운행",
@@ -1101,11 +981,8 @@
                 mobFitMap: "🔍 All",
                 followOn: "🎯 Follow Bus ON",
                 followOff: "🎯 Follow Bus OFF",
-                liveBtnDesk: "📡 View Official Real-Time Bus GPS (LIVE)",
-                liveBtnMob: "📡 Live Bus GPS",
-                modalTitle: "Official Boracay HOHO Live Bus GPS",
-                modalExt: "↗ Open in New Tab",
-                modalTip: "💡 Official live fleet tracker by Southwest Tours. If blocked by browser security, tap [↗ Open in New Tab]!",
+                liveBtnDesk: "📡 Official Real-Time Bus GPS (Open New Tab ↗)",
+                liveBtnMob: "📡 Live Bus GPS ↗",
                 statusDay: "☀️ Daytime Full Route (S1 Port/Tambisaan ~ S21 Keyhole ~ S23 Puka)",
                 statusNight: "🌙 Night Mode: [S21 Keyhole] Closed · Check [Puka/Tambisaan] cautions!",
                 statusXpress: "⚡ Xpress Mode: No Port(S1/H0) access · Runs [S6 EMall ↔ S23 Puka] only",
@@ -1460,28 +1337,6 @@
             if (!isProgrammaticMove && followBus) {
                 setFollowBus(false);
             }
-        });
-
-        // 📡 공식 실시간 실제 버스 GPS 모달 열기/닫기
-        const liveModal = document.getElementById('live-tracker-modal');
-        const liveIframe = document.getElementById('live-tracker-iframe');
-
-        function openLiveTrackerModal() {
-            if (liveIframe.src === 'about:blank') {
-                liveIframe.src = OFFICIAL_LIVE_TRACKER_URL;
-            }
-            liveModal.classList.add('open');
-        }
-
-        function closeLiveTrackerModal() {
-            liveModal.classList.remove('open');
-        }
-
-        document.getElementById('openLiveBtnDesktop').addEventListener('click', openLiveTrackerModal);
-        document.getElementById('live-bus-pill').addEventListener('click', openLiveTrackerModal);
-        document.getElementById('closeLiveModalBtn').addEventListener('click', closeLiveTrackerModal);
-        liveModal.addEventListener('click', (e) => {
-            if (e.target === liveModal) closeLiveTrackerModal();
         });
 
         // 3. 데스크탑 리스트 + 모바일 우측 번호 독(Dock) 생성
@@ -2030,9 +1885,6 @@
 
             document.getElementById('ui-live-btn-desk').textContent = t.liveBtnDesk;
             document.getElementById('ui-live-btn-mob').textContent = t.liveBtnMob;
-            document.getElementById('ui-modal-title').textContent = t.modalTitle;
-            document.getElementById('ui-modal-ext').textContent = t.modalExt;
-            document.getElementById('ui-modal-tip').textContent = t.modalTip;
 
             stops.forEach((stop, idx) => {
                 const titleSpan = document.getElementById(`item-title-${idx}`);
