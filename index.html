@@ -3,18 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>보라카이 HOHO 버스 실시간 노선도</title>
+    <title>보라카이 HOHO 버스 실시간 노선도 | Boracay HOHO Bus Map</title>
     <!-- 카카오톡 등 SNS 공유 시 미리보기 카드 설정 (Open Graph) -->
-    <meta property="og:title" content="🚌 보라카이 HOHO 버스 노선도">
+    <meta property="og:title" content="🚌 보라카이 HOHO 버스 노선도 (KR/EN)">
     <meta property="og:description" content="보라카이 호호버스(일반/익스프레스/야간코스) 공식 정류장 위치 및 주행 안내">
     <!-- 지도 라이브러리 (Leaflet.js) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif; display: flex; height: 100vh; height: 100dvh; overflow: hidden; background: #e0f2fe; }
-        
-        /* 좌측 사이드바 스타일 */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body, html {
+            font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            position: relative;
+            background: #e0f2fe;
+        }
+
+        /* =========================================================
+           1. 데스크탑용 좌측 사이드바 스타일 (PC 기본 표시)
+           ========================================================= */
         #sidebar {
             width: 395px;
             background: #ffffff;
@@ -22,13 +33,14 @@
             z-index: 1000;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
         #header {
             background: linear-gradient(135deg, #1d4ed8, #2563eb);
             color: white;
-            padding: 10px 14px;
-            text-align: center;
+            padding: 10px 12px;
             transition: background 0.3s;
+            position: relative;
         }
         #header.night-theme {
             background: linear-gradient(135deg, #0f172a, #1e3a8a);
@@ -36,10 +48,34 @@
         #header.xpress-theme {
             background: linear-gradient(135deg, #1d4ed8 30%, #ea580c 100%);
         }
-        #header h1 { font-size: 16px; margin-bottom: 2px; }
-        #header p { font-size: 10.5px; opacity: 0.95; }
+        .header-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+        #header h1 { font-size: 15.5px; text-align: left; }
+        #header p { font-size: 10.5px; opacity: 0.95; text-align: left; }
 
-        /* ☀️ 주간 / 🌙 야간 / ⚡ 익스프레스 모드 선택 탭 */
+        /* 언어 전환 버튼 (KR/EN) */
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 14px;
+            padding: 3px 9px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .lang-btn:hover { background: rgba(255, 255, 255, 0.35); }
+        .lang-btn:active { transform: scale(0.95); }
+
+        /* 데스크탑 모드 선택 탭 */
         #mode-selector {
             display: flex;
             background: #e2e8f0;
@@ -50,12 +86,12 @@
         .mode-btn {
             flex: 1;
             padding: 6px 4px;
-            border: 1px solid transparent;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
             background: #ffffff;
-            color: #475569;
+            color: #1e293b;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
@@ -64,25 +100,28 @@
         .mode-btn small {
             display: block;
             font-size: 9.5px;
-            font-weight: 500;
-            opacity: 0.85;
+            font-weight: 600;
+            opacity: 0.9;
             margin-top: 1px;
         }
         .mode-btn.active[data-mode="day"] {
-            background: #2563eb;
-            color: #ffffff;
-            box-shadow: 0 2px 5px rgba(37,99,235,0.35);
+            background: #2563eb !important;
+            color: #ffffff !important;
+            border-color: #1d4ed8 !important;
+            box-shadow: 0 2px 6px rgba(37,99,235,0.4);
         }
         .mode-btn.active[data-mode="night"] {
-            background: #1e293b;
-            color: #fde047;
-            border-color: #475569;
-            box-shadow: 0 2px 5px rgba(15,23,42,0.4);
+            background: #0f172a !important;
+            color: #fde047 !important;
+            border-color: #334155 !important;
+            box-shadow: 0 2px 6px rgba(15,23,42,0.45);
         }
         .mode-btn.active[data-mode="xpress"] {
-            background: linear-gradient(135deg, #1d4ed8 40%, #f97316 100%);
-            color: #ffffff;
-            box-shadow: 0 2px 5px rgba(249,115,22,0.35);
+            background: linear-gradient(135deg, #1d4ed8 35%, #f97316 100%) !important;
+            color: #ffffff !important;
+            border-color: #ea580c !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 6px rgba(249,115,22,0.4);
         }
 
         /* 범례 바 */
@@ -159,7 +198,7 @@
         .btn.secondary { background: #6c757d; }
         .btn.secondary:hover { background: #495057; }
 
-        /* 정류장 리스트 영역 */
+        /* 데스크탑 정류장 리스트 영역 */
         #stop-list {
             flex: 1;
             overflow-y: auto;
@@ -186,7 +225,6 @@
             background: #fef2f2;
             box-shadow: 0 2px 8px rgba(239,68,68,0.2);
         }
-        /* 야간 마감 또는 익스프레스 미운행 시 흐리게 표시 */
         .stop-item.closed-stop {
             background: #f1f5f9;
             border-color: #cbd5e1;
@@ -265,9 +303,51 @@
         .coord-text { font-size: 10px; color: #2563eb; font-family: monospace; margin-top: 2px; }
 
         /* 지도 영역 */
-        #map { flex: 1; height: 100%; background: #a2d2ff; }
+        #map { flex: 1; height: 100%; background: #a2d2ff; z-index: 1; }
 
-        /* 지도 위 커스텀 마커 디자인 (Leaflet 위치 transform 충돌 방지) */
+        /* =========================================================
+           2. 버스 카메라 추적(Follow) 플로팅 버튼 (데스크탑/모바일 공용)
+           ========================================================= */
+        #follow-bus-pill {
+            position: absolute;
+            left: 410px; /* 데스크탑에서는 사이드바 오른쪽 하단 */
+            bottom: 22px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            padding: 7px 13px;
+            font-size: 11.5px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.25s ease;
+        }
+        #follow-bus-pill.following {
+            background: #2563eb;
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3), 0 4px 12px rgba(0,0,0,0.25);
+        }
+        #follow-bus-pill:active { transform: scale(0.95); }
+
+        /* =========================================================
+           3. 모바일 전용 플로팅 UI (데스크탑에서는 숨김)
+           ========================================================= */
+        #top-floating-bar,
+        #right-stop-dock,
+        #stop-info-card {
+            display: none;
+        }
+
+        /* =========================================================
+           4. 공통 지도 마커 디자인
+           ========================================================= */
         .custom-stop-marker {
             background: transparent;
             border: none;
@@ -295,24 +375,33 @@
             background: linear-gradient(135deg, #1d4ed8 50%, #f97316 50%);
             text-shadow: 0 1px 2px rgba(0,0,0,0.7);
         }
-        /* 마감되거나 미정차 정류장 마커 스타일 */
         .custom-stop-marker.marker-closed .marker-inner {
             background: #94a3b8 !important;
             color: #e2e8f0;
             border-color: #cbd5e1;
-            opacity: 0.45;
+            opacity: 0.42;
             transform: scale(0.85);
             text-shadow: none;
         }
-        /* 활성화(하이라이트) 시 제자리에서 확대 */
         .custom-stop-marker.highlight .marker-inner {
             background: #ef4444 !important;
             opacity: 1 !important;
-            transform: scale(1.35);
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+            transform: scale(1.38);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.9);
         }
 
-        /* 내 현재 위치(GPS) 마커 */
+        .stop-label-tooltip {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 11px;
+            padding: 3px 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+            white-space: nowrap;
+        }
+
         .my-location-marker {
             background: #ef4444;
             border: 3px solid #ffffff;
@@ -320,20 +409,6 @@
             box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.35), 0 2px 6px rgba(0,0,0,0.5);
         }
 
-        /* 정류장 라벨 */
-        .stop-label-tooltip {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 11px;
-            padding: 3px 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            white-space: nowrap;
-        }
-
-        /* 움직이는 버스 아이콘 디자인 */
         .bus-marker {
             background: #ffd166;
             border: 3px solid #ef476f;
@@ -345,72 +420,497 @@
             box-shadow: 0 0 12px rgba(239, 71, 111, 0.9);
         }
 
-        .leaflet-control-layers {
-            border-radius: 8px !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
-            font-family: 'Pretendard', sans-serif;
-            font-size: 12px;
-            padding: 4px 8px;
+        /* =========================================================
+           5. 모바일 화면 (768px 이하): 사이드바 숨기고 플로팅 UI 활성화
+           ========================================================= */
+        @media (max-width: 768px) {
+            #sidebar {
+                display: none !important;
+            }
+            #map {
+                width: 100%;
+                height: 100%;
+            }
+            .leaflet-control-zoom {
+                display: none !important;
+            }
+
+            /* 모바일에서 버스 추적 버튼 위치 */
+            #follow-bus-pill {
+                left: 12px;
+                bottom: 20px;
+                padding: 7px 11px;
+                font-size: 11px;
+            }
+            body.card-open #follow-bus-pill {
+                bottom: 138px;
+            }
+
+            /* 상단 슬림 플로팅 컨트롤 패널 */
+            #top-floating-bar {
+                display: flex;
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                right: 64px;
+                z-index: 1000;
+                flex-direction: column;
+                gap: 6px;
+                pointer-events: none;
+            }
+            .floating-box {
+                pointer-events: auto;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border-radius: 12px;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+                border: 1px solid rgba(255, 255, 255, 0.85);
+            }
+            #top-main-pill {
+                padding: 6px 8px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 4px;
+            }
+            .app-title {
+                font-size: 12.5px;
+                font-weight: 800;
+                color: #1e3a8a;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                gap: 3px;
+            }
+            .ctrl-group {
+                display: flex;
+                gap: 3.5px;
+                align-items: center;
+            }
+            .ctrl-btn {
+                border: none;
+                border-radius: 7px;
+                padding: 6px 7px;
+                font-size: 10.5px;
+                font-weight: 800;
+                color: #fff;
+                cursor: pointer;
+                white-space: nowrap;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.14);
+            }
+            .ctrl-btn:active { transform: scale(0.94); }
+            .ctrl-btn.play { background: #10b981; }
+            .ctrl-btn.speed { background: #64748b; }
+            .ctrl-btn.gps { background: #ef4444; }
+            .ctrl-btn.fit { background: #3b82f6; }
+            .ctrl-btn.lang {
+                background: #1e293b;
+                color: #fde047;
+                border: 1px solid #475569;
+            }
+
+            /* 모바일 주간/야간/익스프레스 선택 탭 */
+            #mode-pill {
+                display: flex;
+                padding: 4px;
+                gap: 4px;
+                background: rgba(241, 245, 249, 0.96);
+            }
+            #mode-pill .mode-btn {
+                padding: 6px 4px;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                background: #ffffff;
+                color: #1e293b;
+                font-size: 11px;
+                font-weight: 800;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+            }
+            #mode-pill .mode-btn.active[data-mode="day"] {
+                background: #2563eb !important;
+                color: #ffffff !important;
+                border-color: #1d4ed8 !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            }
+            #mode-pill .mode-btn.active[data-mode="night"] {
+                background: #0f172a !important;
+                color: #fde047 !important;
+                border-color: #0f172a !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            }
+            #mode-pill .mode-btn.active[data-mode="xpress"] {
+                background: linear-gradient(135deg, #1d4ed8 30%, #f97316 100%) !important;
+                color: #ffffff !important;
+                border-color: #ea580c !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+            }
+
+            /* 우측 플로팅 정류장 번호 독(Dock): 맵 선택 버튼이 없어져서 맨 위(top: 10px)까지 시원하게 확장 */
+            #right-stop-dock {
+                display: flex;
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                bottom: 20px;
+                width: 46px;
+                z-index: 1000;
+                background: rgba(255, 255, 255, 0.9);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border-radius: 23px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+                border: 1px solid rgba(255, 255, 255, 0.85);
+                flex-direction: column;
+                align-items: center;
+                padding: 8px 0 6px;
+                overflow: hidden;
+            }
+            .dock-label {
+                font-size: 9px;
+                font-weight: 800;
+                color: #334155;
+                margin-bottom: 4px;
+                letter-spacing: -0.5px;
+            }
+            #stop-dock-list {
+                flex: 1;
+                width: 100%;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 0 10px;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+            #stop-dock-list::-webkit-scrollbar { display: none; }
+
+            .dock-stop-btn {
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                border: 2px solid #ffffff;
+                background: #2563eb;
+                color: #ffffff;
+                font-size: 11px;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                cursor: pointer;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.22);
+                transition: transform 0.2s, background 0.2s, opacity 0.2s;
+            }
+            .dock-stop-btn.xpress-split {
+                background: linear-gradient(135deg, #1d4ed8 50%, #f97316 50%);
+                text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            }
+            .dock-stop-btn.closed-stop {
+                background: #94a3b8 !important;
+                opacity: 0.4;
+                text-shadow: none;
+            }
+            .dock-stop-btn.active {
+                background: #ef4444 !important;
+                opacity: 1 !important;
+                transform: scale(1.18);
+                box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
+            }
+
+            /* 클릭 시에만 뜨는 모바일 하단 정류장 미니 카드 */
+            #stop-info-card {
+                display: block;
+                position: absolute;
+                left: 12px;
+                right: 66px;
+                bottom: 18px;
+                z-index: 1000;
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                color: #ffffff;
+                border-radius: 14px;
+                padding: 12px 14px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                transform: translateY(140%);
+                opacity: 0;
+                pointer-events: none;
+                transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+            }
+            #stop-info-card.visible {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .card-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                margin-bottom: 4px;
+            }
+            .card-title-wrap {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                flex-wrap: wrap;
+            }
+            .card-badge {
+                background: #2563eb;
+                color: #fff;
+                font-weight: 800;
+                font-size: 11px;
+                padding: 3px 8px;
+                border-radius: 12px;
+            }
+            .card-badge.xpress-split {
+                background: linear-gradient(135deg, #2563eb 45%, #f97316 100%);
+            }
+            .card-title {
+                font-size: 14.5px;
+                font-weight: 800;
+                color: #f8fafc;
+            }
+            .card-close-btn {
+                background: rgba(255,255,255,0.15);
+                border: none;
+                color: #cbd5e1;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                font-size: 13px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            .card-en-label {
+                font-size: 11px;
+                color: #93c5fd;
+                font-weight: 600;
+                margin-bottom: 4px;
+            }
+            .card-desc {
+                font-size: 11.5px;
+                color: #cbd5e1;
+                line-height: 1.35;
+            }
+            .card-tags {
+                margin-top: 6px;
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+            .mini-tag {
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+            .mini-tag.xpress { background: rgba(249, 115, 22, 0.25); color: #fdba74; border: 1px solid rgba(249,115,22,0.5); }
+            .mini-tag.regular { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid rgba(59,130,246,0.5); }
+            .mini-tag.warn { background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); }
         }
 
-        @media (max-width: 768px) {
-            body { flex-direction: column-reverse; }
-            #sidebar { width: 100%; height: 48%; }
-            #map { height: 52%; }
+        @media (max-width: 400px) {
+            .app-title span { display: none; }
         }
     </style>
 </head>
 <body>
+    <!-- 💻 1. 데스크탑용 좌측 사이드바 (PC에서만 표시) -->
     <div id="sidebar">
         <div id="header">
-            <h1>🚌 보라카이 HOHO 버스 노선도</h1>
-            <p>시간대/버스 종류를 선택하면 실제 운행 구간이 표시됩니다</p>
+            <div class="header-top-row">
+                <h1 id="ui-header-title">🚌 보라카이 HOHO 버스 노선도</h1>
+                <button id="langBtnDesktop" class="lang-btn">🌐 EN</button>
+            </div>
+            <p id="ui-header-sub">시간대/버스 종류를 선택하면 실제 운행 구간이 표시됩니다</p>
         </div>
 
-        <!-- ☀️ 주간 / 🌙 일몰 후 야간 / ⚡ 익스프레스 선택 탭 -->
         <div id="mode-selector">
-            <button class="mode-btn active" data-mode="day">
+            <button class="mode-btn active" data-mode="day" id="desk-mode-day">
                 ☀️ 주간 전체
                 <small>06:00~17:30 (24곳)</small>
             </button>
-            <button class="mode-btn" data-mode="night">
+            <button class="mode-btn" data-mode="night" id="desk-mode-night">
                 🌙 일몰 후 야간
                 <small>17:30~22:00 (키홀마감)</small>
             </button>
-            <button class="mode-btn" data-mode="xpress">
+            <button class="mode-btn" data-mode="xpress" id="desk-mode-xpress">
                 ⚡ 익스프레스만
                 <small>~17:00 (S6~푸카 8곳)</small>
             </button>
         </div>
 
-        <!-- 범례 -->
         <div id="legend-bar">
-            <div class="legend-item"><span class="dot-regular"></span> 일반 정류장</div>
-            <div class="legend-item"><span class="dot-xpress"></span> 일반+익스프레스</div>
-            <div class="legend-item"><span class="dot-closed"></span> 미운행/무정차</div>
+            <div class="legend-item"><span class="dot-regular"></span> <span id="ui-leg-reg">일반 정류장</span></div>
+            <div class="legend-item"><span class="dot-xpress"></span> <span id="ui-leg-xp">일반+익스프레스</span></div>
+            <div class="legend-item"><span class="dot-closed"></span> <span id="ui-leg-cl">미운행/무정차</span></div>
         </div>
 
         <div id="route-status">⏳ 공식 GPS 트래커 노선을 그리는 중...</div>
         
-        <!-- 주행 및 내 위치 컨트롤 버튼 -->
         <div class="control-row">
-            <button id="playBtn" class="btn start-btn">▶️ 버스 출발</button>
-            <button id="speedBtn" class="btn secondary">⚡ 속도: 1x</button>
-            <button id="myLocBtn" class="btn gps-btn">📍 내 위치</button>
-            <button id="fitBtn" class="btn secondary">🔍 전체맵</button>
+            <button id="playBtnDesktop" class="btn start-btn">▶️ 버스 출발</button>
+            <button id="speedBtnDesktop" class="btn secondary">⚡ 속도: 1x</button>
+            <button id="myLocBtnDesktop" class="btn gps-btn">📍 내 위치</button>
+            <button id="fitBtnDesktop" class="btn secondary">🔍 전체맵</button>
         </div>
 
         <div id="stop-list"></div>
     </div>
+
+    <!-- 🗺️ 2. 지도 영역 -->
     <div id="map"></div>
+
+    <!-- 🎯 버스 카메라 추적(Follow) 토글 버튼 -->
+    <button id="follow-bus-pill" class="following">🎯 버스 따라가기 ON</button>
+
+    <!-- 📱 3. 모바일 전용 플로팅 UI (핸드폰에서만 표시) -->
+    <div id="top-floating-bar">
+        <div id="top-main-pill" class="floating-box">
+            <div class="app-title">🚌 <span id="ui-mob-title">보라카이</span></div>
+            <div class="ctrl-group">
+                <button id="playBtnMobile" class="ctrl-btn play">▶️ 출발</button>
+                <button id="speedBtnMobile" class="ctrl-btn speed">1x</button>
+                <button id="myLocBtnMobile" class="ctrl-btn gps">📍 내위치</button>
+                <button id="fitBtnMobile" class="ctrl-btn fit">🔍 전체</button>
+                <button id="langBtnMobile" class="ctrl-btn lang">EN</button>
+            </div>
+        </div>
+
+        <div id="mode-pill" class="floating-box">
+            <button class="mode-btn active" data-mode="day" id="mob-mode-day">☀️ 주간(전체)</button>
+            <button class="mode-btn" data-mode="night" id="mob-mode-night">🌙 야간(17:30~)</button>
+            <button class="mode-btn" data-mode="xpress" id="mob-mode-xpress">⚡ 익스프레스</button>
+        </div>
+    </div>
+
+    <div id="right-stop-dock">
+        <div class="dock-label" id="ui-dock-label">정류장</div>
+        <div id="stop-dock-list"></div>
+    </div>
+
+    <div id="stop-info-card">
+        <div class="card-header">
+            <div class="card-title-wrap">
+                <span id="card-badge" class="card-badge">S1</span>
+                <span id="card-title" class="card-title">카그반 포트</span>
+            </div>
+            <button id="card-close-btn" class="card-close-btn" aria-label="Close">✕</button>
+        </div>
+        <div id="card-en-label" class="card-en-label">CAGBAN JETTY PORT</div>
+        <div id="card-desc" class="card-desc">남부 메인 선착장</div>
+        <div id="card-tags" class="card-tags"></div>
+    </div>
+
     <script>
-        // 1. 24개 정류장 데이터 (세부 조정 좌표 100% 유지 + 항구/탐비산 익스프레스 미경유 반영)
+        // 🌐 다국어(KR / EN) 번역 사전
+        let currentLang = 'ko'; // 'ko' | 'en'
+
+        const i18n = {
+            ko: {
+                headerTitle: "🚌 보라카이 HOHO 버스 노선도",
+                headerSub: "시간대/버스 종류를 선택하면 실제 운행 구간이 표시됩니다",
+                mobTitle: "보라카이",
+                langBtnText: "🌐 EN",
+                mobLangBtnText: "EN",
+                deskDay: "☀️ 주간 전체<small>06:00~17:30 (24곳)</small>",
+                deskNight: "🌙 일몰 후 야간<small>17:30~22:00 (키홀마감)</small>",
+                deskXpress: "⚡ 익스프레스만<small>~17:00 (S6~푸카 8곳)</small>",
+                mobDay: "☀️ 주간(전체)",
+                mobNight: "🌙 야간(17:30~)",
+                mobXpress: "⚡ 익스프레스",
+                legReg: "일반 정류장",
+                legXp: "일반+익스프레스",
+                legCl: "미운행/무정차",
+                dockLabel: "정류장",
+                playStart: "▶️ 버스 출발",
+                playStop: "⏸️ 일시정지",
+                mobPlayStart: "▶️ 출발",
+                mobPlayStop: "⏸️ 정지",
+                speedPrefix: "⚡ 속도: ",
+                myLoc: "📍 내 위치",
+                mobMyLoc: "📍 내위치",
+                fitMap: "🔍 전체맵",
+                mobFitMap: "🔍 전체",
+                followOn: "🎯 버스 따라가기 ON",
+                followOff: "🎯 버스 따라가기 OFF",
+                statusDay: "☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)",
+                statusNight: "🌙 일몰 후 야간 모드: [S21 키홀] 마감 및 ⚡익스프레스 종료",
+                statusXpress: "⚡ 익스프레스 모드: 항구(S1)/탐비산(H0) 미운행 · [S6 이몰 ↔ S23 푸카]만 운행",
+                findingGps: "📡 내 현재 GPS 위치를 찾는 중...",
+                nearestFound: "📍 가장 가까운 운행 정류장: ",
+                myCurrentPos: "📍 내 현재 위치",
+                gpsNotSupported: "이 브라우저에서는 GPS 위치 기능을 지원하지 않습니다.",
+                gpsPermError: "위치 권한을 허용해주시거나 HTTPS 웹 주소에서 실행해주세요.",
+                badgeShared: "🚌 일반 + ⚡익스프레스 공용 정류장",
+                badgeRegOnly: "🚌 일반 HOHO 전용 (⚡익스프레스 미정차)",
+                sunsetWarn: "⏰ 17:30 마지막 운행 (일몰 후 미경유)",
+                timeNoteKeyhole: "⏰ 17:30 마감",
+                reasonNightClosed: "🌙 야간 미운행",
+                reasonPortSkipped: "🚫 항구측 미운행",
+                reasonPassThrough: "무정차 통과"
+            },
+            en: {
+                headerTitle: "🚌 Boracay HOHO Bus Route Map",
+                headerSub: "Select time or bus type to view active stops & routes",
+                mobTitle: "HOHO",
+                langBtnText: "🌐 KR",
+                mobLangBtnText: "KR",
+                deskDay: "☀️ Daytime All<small>06:00~17:30 (24 Stops)</small>",
+                deskNight: "🌙 Night Mode<small>17:30~22:00 (No Keyhole)</small>",
+                deskXpress: "⚡ Xpress Only<small>~17:00 (S6~Puka 8 Stops)</small>",
+                mobDay: "☀️ Day (All)",
+                mobNight: "🌙 Night (17:30~)",
+                mobXpress: "⚡ Xpress",
+                legReg: "Regular Only",
+                legXp: "Regular + Xpress",
+                legCl: "Closed / Skipped",
+                dockLabel: "STOPS",
+                playStart: "▶️ Start Bus",
+                playStop: "⏸️ Pause",
+                mobPlayStart: "▶️ Play",
+                mobPlayStop: "⏸️ Pause",
+                speedPrefix: "⚡ Speed: ",
+                myLoc: "📍 My GPS",
+                mobMyLoc: "📍 GPS",
+                fitMap: "🔍 Fit Map",
+                mobFitMap: "🔍 All",
+                followOn: "🎯 Follow Bus ON",
+                followOff: "🎯 Follow Bus OFF",
+                statusDay: "☀️ Daytime Full Route (S1 Port/Tambisaan ~ S21 Keyhole ~ S23 Puka)",
+                statusNight: "🌙 After Sunset Mode: [S21 Keyhole] Closed & ⚡Xpress Ended",
+                statusXpress: "⚡ Xpress Mode: No Port(S1/H0) access · Runs [S6 EMall ↔ S23 Puka] only",
+                findingGps: "📡 Finding your current GPS location...",
+                nearestFound: "📍 Nearest Active Stop: ",
+                myCurrentPos: "📍 You are here",
+                gpsNotSupported: "Geolocation is not supported by your browser.",
+                gpsPermError: "Please allow location access or open via HTTPS.",
+                badgeShared: "🚌 Regular + ⚡Xpress Shared Stop",
+                badgeRegOnly: "🚌 Regular HOHO Only (⚡No Xpress)",
+                sunsetWarn: "⏰ Last Bus 17:30 (Closed after sunset)",
+                timeNoteKeyhole: "⏰ Ends 17:30",
+                reasonNightClosed: "🌙 Closed at Night",
+                reasonPortSkipped: "🚫 No Xpress Service",
+                reasonPassThrough: "Pass Through"
+            }
+        };
+
+        // 1. 24개 정류장 데이터 (세부 조정 완료된 좌표 100% 그대로 유지)
         const stops = [
           {
             "id": "S1",
             "label": "CAGBAN JETTY PORT",
             "name": "카그반 포트",
             "desc": "남부 메인 선착장 (일반 HOHO 전용 · 익스프레스 미운행)",
+            "descEn": "Main Southern Jetty Port (Regular HOHO only · No Xpress service)",
             "lat": 11.94103707,
             "lng": 121.93912804,
             "isXpress": false,
@@ -422,6 +922,7 @@
             "label": "MANOC MANOC BARANGAY HALL",
             "name": "마녹마녹 바랑가이 홀",
             "desc": "카그반 동쪽 회차 경유 정류소 (익스프레스 미운행)",
+            "descEn": "Manoc Manoc Barangay Hall loop stop (Regular HOHO only)",
             "lat": 11.94121814,
             "lng": 121.94242448,
             "isXpress": false,
@@ -433,6 +934,7 @@
             "label": "MANOC MANOC SCHOOL",
             "name": "마녹마녹 스쿨",
             "desc": "탐비산 진입 삼거리 정류소 (익스프레스 미운행)",
+            "descEn": "Tambisaan junction stop near Manoc Manoc School (Regular only)",
             "lat": 11.94912727,
             "lng": 121.93917096,
             "isXpress": false,
@@ -444,6 +946,7 @@
             "label": "TAMBISAAN BEACH",
             "name": "탐비산 비치",
             "desc": "탐비산 회차 선착장 (일반 HOHO 전용 · 익스프레스 미운행)",
+            "descEn": "Tambisaan Beach & Port turnaround stop (Regular only · No Xpress)",
             "lat": 11.94915613,
             "lng": 121.94710225,
             "isXpress": false,
@@ -455,6 +958,7 @@
             "label": "BORACAY ROTUNDA",
             "name": "보라카이 로터리",
             "desc": "메인로드 진입 로터리 (익스프레스 미운행)",
+            "descEn": "Main road entry roundabout (Regular HOHO only)",
             "lat": 11.94858933,
             "lng": 121.93687499,
             "isXpress": false,
@@ -466,6 +970,7 @@
             "label": "BORACAY GRACE HOTEL",
             "name": "보라카이 그레이스 호텔 / 세인트 가브리엘",
             "desc": "Saint Gabriel Medical Center & Grace Hotel (익스프레스 미운행)",
+            "descEn": "Saint Gabriel Medical Center & Grace Hotel (Regular HOHO only)",
             "lat": 11.95059938,
             "lng": 121.93494916,
             "isXpress": false,
@@ -477,6 +982,7 @@
             "label": "EMALL STATION 3",
             "name": "이몰 스테이션 3",
             "desc": "⚡ 익스프레스 남부 출발/회차점 (일반+익스프레스 공용)",
+            "descEn": "⚡ Xpress Southern Terminal & Station 3 Tulubhan Jct. (Regular + Xpress)",
             "lat": 11.95418384,
             "lng": 121.93158031,
             "isXpress": true,
@@ -487,6 +993,7 @@
             "label": "STATION X",
             "name": "스테이션 X / 휴 호텔",
             "desc": "스테이션 2~3 경계 메인로드",
+            "descEn": "Hue Hotels & Station X along Main Road (Station 2/3 border)",
             "lat": 11.95702304,
             "lng": 121.93060398,
             "isXpress": false,
@@ -497,6 +1004,7 @@
             "label": "AZALEA HOTEL",
             "name": "아잘레아 호텔",
             "desc": "스테이션 2 메인로드",
+            "descEn": "Azalea Hotels & Residences along Station 2 Main Road",
             "lat": 11.95950928,
             "lng": 121.9286862,
             "isXpress": false,
@@ -507,6 +1015,7 @@
             "label": "JOLLIBEE / D'MALL SOUTH",
             "name": "졸리비 / 크래프츠",
             "desc": "디몰 남측 메인로드 정류소",
+            "descEn": "Crafts of Boracay / Jollibee South D'Mall Main Road",
             "lat": 11.96195089,
             "lng": 121.92719489,
             "isXpress": false,
@@ -517,6 +1026,7 @@
             "label": "BALAGBAG LAKE",
             "name": "발라박 호수 / 디몰",
             "desc": "🔥 디몰 로터리 & 발라박 호수 앞 (일반+익스프레스 공용)",
+            "descEn": "🔥 D'Mall Rotunda & Balagbag Lake (Regular + Xpress Shared Stop)",
             "lat": 11.96288765,
             "lng": 121.92707688,
             "isXpress": true,
@@ -527,6 +1037,7 @@
             "label": "BULABOG BEACH",
             "name": "불라복 비치",
             "desc": "Road 1-A 경유 불라복 해변 정류소 (일반+익스프레스 공용)",
+            "descEn": "Bulabog Beach water sports area via Road 1-A (Regular + Xpress)",
             "lat": 11.96594191,
             "lng": 121.92845285,
             "isXpress": true,
@@ -537,6 +1048,7 @@
             "label": "WETLAND NO.3",
             "name": "웨트랜드 3호",
             "desc": "불라복 루프가 메인로드와 다시 만나는 곳",
+            "descEn": "Wetland No. 3 junction where Bulabog loop rejoins Main Road",
             "lat": 11.96572938,
             "lng": 121.9251591,
             "isXpress": false,
@@ -547,6 +1059,7 @@
             "label": "ASTORIA STATION 1",
             "name": "아스토리아 스테이션 1",
             "desc": "스테이션 1 메인로드 삼거리 (일반+익스프레스 공용)",
+            "descEn": "Astoria Boracay Station 1 Main Road (Regular + Xpress)",
             "lat": 11.96536203,
             "lng": 121.92277998,
             "isXpress": true,
@@ -557,6 +1070,7 @@
             "label": "KOLAI MANGYAN",
             "name": "콜라이 망얀",
             "desc": "스테이션 1 메인로드",
+            "descEn": "Kolai Mangyan restaurant along Station 1 Main Road",
             "lat": 11.9673339,
             "lng": 121.92048669,
             "isXpress": false,
@@ -567,6 +1081,7 @@
             "label": "WILLY'S ROCK",
             "name": "윌리스 락",
             "desc": "윌리스 락 건너편 메인로드 (일반+익스프레스 공용)",
+            "descEn": "Main Road across Willy's Rock Station 1 (Regular + Xpress)",
             "lat": 11.96889644,
             "lng": 121.91920459,
             "isXpress": true,
@@ -577,6 +1092,7 @@
             "label": "TWO SEASON HOTEL",
             "name": "투 시즌스 호텔",
             "desc": "스테이션 1 북단 메인로드",
+            "descEn": "Two Seasons Resort access road along North Station 1",
             "lat": 11.97114511,
             "lng": 121.91815048,
             "isXpress": false,
@@ -587,6 +1103,7 @@
             "label": "THE LIND HOTEL",
             "name": "더 린드 호텔",
             "desc": "디니위드 & 더 린드 메인로드 구간",
+            "descEn": "The Lind Boracay & Diniwid junction along Main Road",
             "lat": 11.97338065,
             "lng": 121.91825509,
             "isXpress": false,
@@ -597,6 +1114,7 @@
             "label": "CANYON DE BORACAY",
             "name": "캐년 드 보라카이",
             "desc": "더 린드~시티몰 사이 정류소",
+            "descEn": "Canyon Hotels & Resorts between The Lind and CityMall",
             "lat": 11.97522783,
             "lng": 121.91844016,
             "isXpress": false,
@@ -607,6 +1125,7 @@
             "label": "CITYMALL BORACAY",
             "name": "시티몰 보라카이",
             "desc": "시티몰 앞 메인로드 정류소",
+            "descEn": "CityMall Boracay shopping center along Main Road",
             "lat": 11.97920817,
             "lng": 121.92072675,
             "isXpress": false,
@@ -617,6 +1136,7 @@
             "label": "NEW COAST",
             "name": "뉴코스트 단지 정류소",
             "desc": "상행 시 진입 후 S21 찍고 복귀 (야간엔 여기서 바로 S22행)",
+            "descEn": "Boracay Newcoast Savoya/Belmont stop (Regular + Xpress)",
             "lat": 11.98542387,
             "lng": 121.92089438,
             "isXpress": true,
@@ -627,17 +1147,18 @@
             "label": "KEYHOLE / NEWCOAST END",
             "name": "뉴코스트 키홀 끝 회차지",
             "desc": "⚠️ 일몰 후 미운행 (오후 5시 30분 마지막 버스)",
+            "descEn": "⚠️ Closed after sunset (Last bus at 17:30 · Scenic Keyhole rock)",
             "lat": 11.98176111,
             "lng": 121.92916632,
             "isXpress": true,
-            "closesAtSunset": true,
-            "timeNote": "⏰ 17:30 마감"
+            "closesAtSunset": true
           },
           {
             "id": "S22",
             "label": "ALTA VISTA",
             "name": "알타 비스타",
             "desc": "푸카비치 가는 길 북부 메인로드",
+            "descEn": "Alta Vista de Boracay along Northern Main Road to Puka",
             "lat": 11.98794265,
             "lng": 121.91322327,
             "isXpress": false,
@@ -648,6 +1169,7 @@
             "label": "PUKA BEACH",
             "name": "푸카 비치",
             "desc": "🏖️ 북부 종점 회차지 (일반+익스프레스 공용)",
+            "descEn": "🏖️ Puka Shell Beach Northern Terminal (Regular + Xpress)",
             "lat": 11.99493738,
             "lng": 121.91601813,
             "isXpress": true,
@@ -655,56 +1177,86 @@
           }
         ];
 
-        // 2. 지도 초기화
+        function isMobileView() {
+            return window.innerWidth <= 768;
+        }
+
+        function getStopTitle(stop) {
+            return currentLang === 'en' ? stop.label : stop.name;
+        }
+
+        function getStopSubLabel(stop) {
+            return currentLang === 'en' ? stop.name : stop.label;
+        }
+
+        function getStopDesc(stop) {
+            return currentLang === 'en' ? stop.descEn : stop.desc;
+        }
+
+        // 2. 지도 초기화 (일반 지도 고정, 우측 상단 맵 선택 컨트롤 제거)
         const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}', {
             maxZoom: 20,
             attribution: '&copy; Google Maps'
         });
 
-        const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=ko&x={x}&y={y}&z={z}', {
-            maxZoom: 20,
-            attribution: '&copy; Google Maps Satellite'
-        });
-
-        const googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=ko&x={x}&y={y}&z={z}', {
-            maxZoom: 20,
-            attribution: '&copy; Google Maps Terrain'
-        });
-
         const map = L.map('map', {
             center: [11.9665, 121.9265],
-            zoom: 14,
+            zoom: isMobileView() ? 13.5 : 14,
             layers: [googleStreets]
         });
 
-        L.control.layers({
-            "🗺️ 일반 지도": googleStreets,
-            "🛰️ 위성 지도": googleHybrid,
-            "⛰️ 지형도": googleTerrain
-        }, null, { collapsed: true, position: 'topright' }).addTo(map);
+        // 🎯 카메라 버스 추적(Follow) 상태 관리
+        let followBus = true;
+        let isProgrammaticMove = false;
+        const followBusPill = document.getElementById('follow-bus-pill');
 
-        // 3. 정류장 마커 및 좌측 리스트 생성
+        function setFollowBus(state) {
+            followBus = state;
+            const t = i18n[currentLang];
+            followBusPill.textContent = followBus ? t.followOn : t.followOff;
+            followBusPill.classList.toggle('following', followBus);
+        }
+
+        followBusPill.addEventListener('click', () => {
+            setFollowBus(!followBus);
+            if (followBus) {
+                isProgrammaticMove = true;
+                map.flyTo(busMarker.getLatLng(), Math.max(map.getZoom(), 15.5), { duration: 0.6 });
+                setTimeout(() => { isProgrammaticMove = false; }, 650);
+            }
+        });
+
+        // 사용자가 손가락이나 마우스로 지도를 직접 드래그하면 자동으로 카메라 추적 해제
+        map.on('dragstart', () => {
+            if (!isProgrammaticMove && followBus) {
+                setFollowBus(false);
+            }
+        });
+
+        // 3. 데스크탑 리스트 + 모바일 우측 번호 독(Dock) 생성
         let currentMode = 'day'; // 'day' | 'night' | 'xpress'
         const markers = [];
         const stopListEl = document.getElementById('stop-list');
-        stopListEl.innerHTML = '';
+        const dockListEl = document.getElementById('stop-dock-list');
+        const infoCardEl = document.getElementById('stop-info-card');
 
         function getPopupContent(stop) {
+            const t = i18n[currentLang];
             const busTypeBadge = stop.isXpress
-                ? `<span style="background:linear-gradient(90deg, #1d4ed8, #f97316); color:#fff; font-size:10.5px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-bottom:4px;">🚌 일반 + ⚡익스프레스 공용 정류장</span>`
-                : `<span style="background:#1d4ed8; color:#fff; font-size:10.5px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-bottom:4px;">🚌 일반 HOHO 전용 (⚡익스프레스 미정차)</span>`;
+                ? `<span style="background:linear-gradient(90deg, #1d4ed8, #f97316); color:#fff; font-size:10.5px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-bottom:4px;">${t.badgeShared}</span>`
+                : `<span style="background:#1d4ed8; color:#fff; font-size:10.5px; padding:2px 6px; border-radius:4px; font-weight:bold; display:inline-block; margin-bottom:4px;">${t.badgeRegOnly}</span>`;
 
             const timeWarning = stop.closesAtSunset
-                ? `<p style="margin:2px 0 4px; font-size:11px; font-weight:bold; color:#dc2626; background:#fee2e2; padding:2px 5px; border-radius:4px; display:inline-block;">⏰ 17:30 마지막 운행 (일몰 후 미경유)</p><br>`
+                ? `<p style="margin:2px 0 4px; font-size:11px; font-weight:bold; color:#dc2626; background:#fee2e2; padding:2px 5px; border-radius:4px; display:inline-block;">${t.sunsetWarn}</p><br>`
                 : '';
 
             return `
                 <div style="font-family:sans-serif; padding:4px;">
                     ${busTypeBadge}<br>
-                    <strong style="color:#1e293b; font-size:13.5px;">[${stop.id}] ${stop.name}</strong>
-                    <p style="margin:2px 0 3px; font-size:11.5px; font-weight:bold; color:#475569;">${stop.label}</p>
+                    <strong style="color:#1e293b; font-size:13.5px;">[${stop.id}] ${getStopTitle(stop)}</strong>
+                    <p style="margin:2px 0 3px; font-size:11.5px; font-weight:bold; color:#475569;">${getStopSubLabel(stop)}</p>
                     ${timeWarning}
-                    <p style="margin:2px 0 4px; font-size:11.5px; color:#555;">${stop.desc}</p>
+                    <p style="margin:2px 0 4px; font-size:11.5px; color:#555;">${getStopDesc(stop)}</p>
                     <p style="margin:0; font-size:11px; color:#1d4ed8; font-family:monospace;">
                         📍 ${stop.lat.toFixed(6)}, ${stop.lng.toFixed(6)}
                     </p>
@@ -727,64 +1279,157 @@
             const marker = L.marker([stop.lat, stop.lng], { icon, draggable: false })
                 .addTo(map)
                 .bindPopup(getPopupContent(stop))
-                .bindTooltip(`${stop.name} (${stop.label})${stop.isXpress ? ' · ⚡Xpress' : ''}${stop.closesAtSunset ? ' · ⏰17:30마감' : ''}`, {
+                .bindTooltip(`${stop.id}. ${getStopTitle(stop)}`, {
                     permanent: false,
                     direction: 'top',
-                    offset: [0, -14],
+                    offset: [0, -16],
                     className: 'stop-label-tooltip'
                 });
 
             marker.on('click', () => {
-                highlightStop(index);
+                setFollowBus(false);
+                if (isMobileView()) {
+                    marker.closePopup();
+                    selectAndShowStop(index, false);
+                } else {
+                    highlightStop(index, false);
+                }
             });
 
             markers.push(marker);
 
+            // (A) 데스크탑 사이드바 아이템 생성
             const item = document.createElement('div');
             item.className = 'stop-item';
             item.id = `stop-item-${index}`;
-
-            const xpressTag = stop.isXpress ? `<span class="tag-xpress" id="xpress-tag-${index}">⚡Xpress</span>` : '';
-            const timeTag = stop.timeNote ? `<span class="tag-time" id="time-tag-${index}">${stop.timeNote}</span>` : '';
 
             item.innerHTML = `
                 <div class="stop-badge ${stop.isXpress ? 'xpress-split' : ''}" id="badge-${index}">${stop.id}</div>
                 <div class="stop-info">
                     <h3>
-                        ${stop.name} <span class="en-label">(${stop.label})</span>
-                        ${xpressTag} ${timeTag}
+                        <span id="item-title-${index}">${getStopTitle(stop)}</span>
+                        <span class="en-label" id="item-sub-${index}">(${getStopSubLabel(stop)})</span>
+                        ${stop.isXpress ? `<span class="tag-xpress" id="xpress-tag-${index}">⚡Xpress</span>` : ''}
+                        ${stop.closesAtSunset ? `<span class="tag-time" id="time-tag-${index}">${i18n[currentLang].timeNoteKeyhole}</span>` : ''}
                         <span class="tag-closed-now" id="closed-tag-${index}" style="display:none;"></span>
                     </h3>
-                    <p>${stop.desc}</p>
+                    <p id="item-desc-${index}">${getStopDesc(stop)}</p>
                     <div class="coord-text" id="coord-text-${index}">${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}</div>
                 </div>
             `;
 
             item.addEventListener('click', () => {
+                setFollowBus(false);
                 map.flyTo([stops[index].lat, stops[index].lng], 17, { duration: 0.7 });
                 marker.openPopup();
-                highlightStop(index);
+                highlightStop(index, false);
             });
 
             stopListEl.appendChild(item);
+
+            // (B) 모바일 우측 플로팅 번호 독(Dock) 버튼 생성
+            const dockBtn = document.createElement('button');
+            dockBtn.className = `dock-stop-btn ${stop.isXpress ? 'xpress-split' : ''}`;
+            dockBtn.id = `dock-btn-${index}`;
+            dockBtn.textContent = stop.id;
+
+            dockBtn.addEventListener('click', () => {
+                setFollowBus(false);
+                selectAndShowStop(index, true);
+            });
+
+            dockListEl.appendChild(dockBtn);
+        });
+
+        // 모바일 하단 미니 정류장 정보 카드 업데이트
+        function showStopCard(index) {
+            if (index < 0 || index >= stops.length) return;
+            const stop = stops[index];
+            const t = i18n[currentLang];
+
+            const badgeEl = document.getElementById('card-badge');
+            const titleEl = document.getElementById('card-title');
+            const enLabelEl = document.getElementById('card-en-label');
+            const descEl = document.getElementById('card-desc');
+            const tagsEl = document.getElementById('card-tags');
+
+            badgeEl.textContent = stop.id;
+            badgeEl.className = `card-badge ${stop.isXpress ? 'xpress-split' : ''}`;
+            titleEl.textContent = getStopTitle(stop);
+            enLabelEl.textContent = getStopSubLabel(stop);
+            descEl.textContent = getStopDesc(stop);
+
+            let tagsHtml = '';
+            if (stop.isXpress) {
+                tagsHtml += `<span class="mini-tag xpress">${t.badgeShared}</span>`;
+            } else {
+                tagsHtml += `<span class="mini-tag regular">${t.badgeRegOnly}</span>`;
+            }
+            if (stop.closesAtSunset) {
+                tagsHtml += `<span class="mini-tag warn">${t.sunsetWarn}</span>`;
+            }
+            if (currentMode === 'xpress' && stop.isSouthPortSection) {
+                tagsHtml += `<span class="mini-tag warn">${t.reasonPortSkipped}</span>`;
+            }
+
+            tagsEl.innerHTML = tagsHtml;
+            infoCardEl.classList.add('visible');
+            document.body.classList.add('card-open');
+        }
+
+        function closeStopCard() {
+            infoCardEl.classList.remove('visible');
+            document.body.classList.remove('card-open');
+            markers.forEach(m => m.closeTooltip());
+        }
+
+        document.getElementById('card-close-btn').addEventListener('click', closeStopCard);
+
+        map.on('click', () => {
+            if (isMobileView()) {
+                closeStopCard();
+            }
         });
 
         let currentActiveStop = -1;
-        function highlightStop(activeIndex) {
-            if (currentActiveStop === activeIndex) return;
-            currentActiveStop = activeIndex;
+        function highlightStop(activeIndex, openMobileCard = false) {
+            if (currentActiveStop !== activeIndex) {
+                currentActiveStop = activeIndex;
 
-            document.querySelectorAll('.stop-item').forEach((el, idx) => {
-                el.classList.toggle('active', idx === activeIndex);
-            });
-            document.querySelectorAll('.custom-stop-marker').forEach((el, idx) => {
-                el.classList.toggle('highlight', idx === activeIndex);
-            });
+                document.querySelectorAll('.stop-item').forEach((el, idx) => {
+                    el.classList.toggle('active', idx === activeIndex);
+                });
+                document.querySelectorAll('.dock-stop-btn').forEach((el, idx) => {
+                    el.classList.toggle('active', idx === activeIndex);
+                });
+                document.querySelectorAll('.custom-stop-marker').forEach((el, idx) => {
+                    el.classList.toggle('highlight', idx === activeIndex);
+                });
 
-            const activeItem = document.getElementById(`stop-item-${activeIndex}`);
-            if (activeItem) {
-                activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                const activeItem = document.getElementById(`stop-item-${activeIndex}`);
+                if (activeItem && !isMobileView()) {
+                    activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                const activeDockBtn = document.getElementById(`dock-btn-${activeIndex}`);
+                if (activeDockBtn && isMobileView()) {
+                    activeDockBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             }
+
+            if (openMobileCard && isMobileView() && activeIndex >= 0) {
+                showStopCard(activeIndex);
+                markers.forEach((m, idx) => {
+                    if (idx === activeIndex) m.openTooltip();
+                    else m.closeTooltip();
+                });
+            }
+        }
+
+        function selectAndShowStop(index, flyToStop = true) {
+            if (flyToStop) {
+                map.flyTo([stops[index].lat, stops[index].lng], 16.5, { duration: 0.6 });
+            }
+            highlightStop(index, true);
         }
 
         function densifyPath(coords, stepSize = 0.00010) {
@@ -818,53 +1463,47 @@
             throw new Error("OSRM failed");
         }
 
-        // 4. 구간별 노선 분리 (남부 항구 구간 vs S6~푸카 본선 vs 키홀 루프)
+        // 4. 구간별 노선 분리
         let dayLoopPath = [];
         let nightLoopPath = [];
         let xpressLoopPath = [];
         let fullLoopPath = [];
 
         let mainRouteData = {
-            southOut: [],     // S1 -> S2 -> S3 -> S4 -> S5 -> S6 (일반 전용 남부 상행)
-            coreOut: [],      // S6(이몰) -> S20(뉴코스트) (일반+익스프레스 공통 상행)
-            keyholeLoop: [],  // S20 -> S21(키홀) -> S20 (주간+익스프레스 공통, 야간 미운행)
-            northEnd: [],     // S20 -> S22 -> S23(푸카비치) (공통 북상)
-            coreIn: [],       // S23(푸카비치) -> S6(이몰) (일반+익스프레스 공통 하행)
-            southIn: []       // S6 -> S5 -> S4 -> S3 -> H0(탐비산) -> S3 -> S2 -> S1 (일반 전용 남부 하행)
+            southOut: [],
+            coreOut: [],
+            keyholeLoop: [],
+            northEnd: [],
+            coreIn: [],
+            southIn: []
         };
         let routeLayerGroup = L.layerGroup().addTo(map);
 
         async function buildOfficialGpsRoute() {
-            // 1) 남부 항구 구간 상행: S1 ~ S6 (익스프레스 미운행 구간)
             const southOutWaypoints = [
                 stops[0], stops[1], stops[2], stops[4], stops[5], stops[6]
             ];
 
-            // 2) 본선 상행: S6(이몰) ~ S20(뉴코스트) (익스프레스 + 일반 공통)
             const coreOutWaypoints = [
                 stops[6], stops[7], stops[8], stops[9], stops[10],
                 stops[11], stops[12], stops[13], stops[14], stops[15],
                 stops[16], stops[17], stops[18], stops[19], stops[20]
             ];
 
-            // 3) 키홀 루프: S20 -> S21 -> S20 (17:30 마감)
             const keyholeLoopWaypoints = [
                 stops[20], stops[21], stops[20]
             ];
 
-            // 4) 북부 푸카비치 구간: S20 -> S22 -> S23
             const northEndWaypoints = [
                 stops[20], stops[22], stops[23]
             ];
 
-            // 5) 본선 하행: S23(푸카비치) ~ S6(이몰) (익스프레스 + 일반 공통)
             const coreInWaypoints = [
                 stops[23], stops[22], stops[19], stops[18], stops[17],
                 stops[16], stops[15], stops[14], stops[13], stops[12],
                 stops[11], stops[10], stops[9], stops[8], stops[7], stops[6]
             ];
 
-            // 6) 남부 항구+탐비산 구간 하행: S6 ~ H0 ~ S1 (익스프레스 미운행 구간)
             const southInWaypoints = [
                 stops[6], stops[5], stops[4], stops[2], stops[3],
                 stops[2], stops[1], stops[0]
@@ -892,7 +1531,6 @@
                 };
             }
 
-            // [주간 전체 노선] S1 출발 -> S6 -> S20 -> S21(키홀) -> S23(푸카) -> S6 -> H0(탐비산) -> S1
             const dayFullCoords = [
                 ...mainRouteData.southOut,
                 ...mainRouteData.coreOut.slice(1),
@@ -903,7 +1541,6 @@
             ];
             dayLoopPath = densifyPath(dayFullCoords, 0.00010);
 
-            // [일몰 후 야간 노선] S21(키홀)만 제외하고 S1 ~ S23 ~ H0 ~ S1 완주
             const nightFullCoords = [
                 ...mainRouteData.southOut,
                 ...mainRouteData.coreOut.slice(1),
@@ -913,7 +1550,6 @@
             ];
             nightLoopPath = densifyPath(nightFullCoords, 0.00010);
 
-            // [⚡ 익스프레스 전용 노선] 항구(S1)/탐비산(H0) 절대 안 감! S6(이몰) <-> S23(푸카) 구간만 순환
             const xpressFullCoords = [
                 ...mainRouteData.coreOut,
                 ...mainRouteData.keyholeLoop.slice(1),
@@ -922,7 +1558,7 @@
             ];
             xpressLoopPath = densifyPath(xpressFullCoords, 0.00010);
 
-            applyOperationMode(currentMode);
+            applyOperationMode(currentMode, false);
         }
 
         function drawActiveSegment(coords, mode) {
@@ -931,7 +1567,7 @@
 
             L.polyline(coords, {
                 color: outerColor,
-                weight: 12,
+                weight: 11,
                 opacity: 0.45,
                 lineCap: 'round',
                 lineJoin: 'round'
@@ -948,8 +1584,8 @@
         function drawInactiveSegment(coords) {
             L.polyline(coords, {
                 color: '#64748b',
-                weight: 4,
-                opacity: 0.55,
+                weight: 3.5,
+                opacity: 0.5,
                 dashArray: '6, 8',
                 lineJoin: 'round'
             }).addTo(routeLayerGroup);
@@ -959,12 +1595,10 @@
             routeLayerGroup.clearLayers();
             if (!mainRouteData.coreOut.length) return;
 
-            // 1. 공통 본선 구간 (S6 이몰 ~ S20 뉴코스트 ~ S23 푸카비치)은 모든 모드에서 운행
             drawActiveSegment(mainRouteData.coreOut, mode);
             drawActiveSegment(mainRouteData.northEnd, mode);
             drawActiveSegment(mainRouteData.coreIn, mode);
 
-            // 2. 남부 선착장 구간 (S1 카그반 ~ H0 탐비산 ~ S5): 익스프레스 모드에서는 미운행(회색 점선)!
             if (mode === 'xpress') {
                 drawInactiveSegment(mainRouteData.southOut);
                 drawInactiveSegment(mainRouteData.southIn);
@@ -973,7 +1607,6 @@
                 drawActiveSegment(mainRouteData.southIn, mode);
             }
 
-            // 3. 뉴코스트 키홀 구간 (S21): 일몰 후 야간 모드에서는 미운행(회색 점선)!
             if (mode === 'night') {
                 drawInactiveSegment(mainRouteData.keyholeLoop);
             } else {
@@ -981,30 +1614,13 @@
             }
         }
 
-        function applyOperationMode(mode) {
-            currentMode = mode;
-            const headerEl = document.getElementById('header');
+        function updateStatusAndListByMode(mode) {
+            const t = i18n[currentLang];
             const statusEl = document.getElementById('route-status');
 
-            headerEl.classList.remove('night-theme', 'xpress-theme');
-            if (mode === 'night') headerEl.classList.add('night-theme');
-            if (mode === 'xpress') headerEl.classList.add('xpress-theme');
-
-            // 모드별 실제 버스 주행 경로 교체
-            if (mode === 'day') fullLoopPath = dayLoopPath;
-            else if (mode === 'night') fullLoopPath = nightLoopPath;
-            else if (mode === 'xpress') fullLoopPath = xpressLoopPath;
-
-            pathCursor = 0;
-            if (fullLoopPath.length > 0) {
-                busMarker.setLatLng(fullLoopPath[0]);
-            }
-
-            drawRouteForMode(mode);
-
-            // 정류장 마커 & 리스트 아이템 상태 업데이트
             stops.forEach((stop, idx) => {
                 const itemEl = document.getElementById(`stop-item-${idx}`);
+                const dockBtnEl = document.getElementById(`dock-btn-${idx}`);
                 const markerEl = document.querySelector(`.marker-${idx}`);
                 const closedTagEl = document.getElementById(`closed-tag-${idx}`);
                 const xpressTagEl = document.getElementById(`xpress-tag-${idx}`);
@@ -1014,13 +1630,14 @@
 
                 if (mode === 'night' && stop.closesAtSunset) {
                     isClosedOrSkipped = true;
-                    closedReason = '🌙 야간 미운행';
+                    closedReason = t.reasonNightClosed;
                 } else if (mode === 'xpress' && !stop.isXpress) {
                     isClosedOrSkipped = true;
-                    closedReason = stop.isSouthPortSection ? '🚫 항구측 미운행' : '무정차 통과';
+                    closedReason = stop.isSouthPortSection ? t.reasonPortSkipped : t.reasonPassThrough;
                 }
 
                 if (itemEl) itemEl.classList.toggle('closed-stop', isClosedOrSkipped);
+                if (dockBtnEl) dockBtnEl.classList.toggle('closed-stop', isClosedOrSkipped);
                 if (markerEl) markerEl.classList.toggle('marker-closed', isClosedOrSkipped);
 
                 if (closedTagEl) {
@@ -1037,49 +1654,134 @@
                 }
             });
 
-            // 모드에 맞는 출발 정류장 하이라이트 (익스프레스는 S6 이몰 출발, 일반은 S1 카그반 출발)
-            highlightStop(mode === 'xpress' ? 6 : 0);
-
-            // 상단 안내 메시지 변경
             if (mode === 'day') {
-                statusEl.innerHTML = "☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)";
+                statusEl.innerHTML = t.statusDay;
                 statusEl.style.background = "#dcfce7";
                 statusEl.style.color = "#166534";
             } else if (mode === 'night') {
-                statusEl.innerHTML = "🌙 일몰 후 야간 모드: [S21 키홀] 마감 및 ⚡익스프레스 종료";
+                statusEl.innerHTML = t.statusNight;
                 statusEl.style.background = "#fef3c7";
                 statusEl.style.color = "#92400e";
             } else if (mode === 'xpress') {
-                statusEl.innerHTML = "⚡ 익스프레스 모드: 항구(S1)/탐비산(H0) 미운행 · [S6 이몰 ↔ S23 푸카]만 운행";
+                statusEl.innerHTML = t.statusXpress;
                 statusEl.style.background = "#ffedd5";
                 statusEl.style.color = "#c2410c";
             }
         }
 
-        // 모드 탭 클릭 이벤트
+        function applyOperationMode(mode, showMobileCardOnSwitch = true) {
+            currentMode = mode;
+            const headerEl = document.getElementById('header');
+
+            headerEl.classList.remove('night-theme', 'xpress-theme');
+            if (mode === 'night') headerEl.classList.add('night-theme');
+            if (mode === 'xpress') headerEl.classList.add('xpress-theme');
+
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+            });
+
+            if (mode === 'day') fullLoopPath = dayLoopPath;
+            else if (mode === 'night') fullLoopPath = nightLoopPath;
+            else if (mode === 'xpress') fullLoopPath = xpressLoopPath;
+
+            pathCursor = 0;
+            if (fullLoopPath.length > 0) {
+                busMarker.setLatLng(fullLoopPath[0]);
+            }
+
+            drawRouteForMode(mode);
+            updateStatusAndListByMode(mode);
+
+            const startIdx = (mode === 'xpress') ? 6 : 0;
+            highlightStop(startIdx, showMobileCardOnSwitch);
+        }
+
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
                 const selectedMode = btn.getAttribute('data-mode');
-                applyOperationMode(selectedMode);
+                applyOperationMode(selectedMode, true);
 
-                if (selectedMode === 'night') {
-                    const keyholeItem = document.getElementById('stop-item-21');
-                    if (keyholeItem) keyholeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else if (selectedMode === 'xpress') {
-                    const emallItem = document.getElementById('stop-item-6');
-                    if (emallItem) emallItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (!isMobileView()) {
+                    if (selectedMode === 'night') {
+                        const keyholeItem = document.getElementById('stop-item-21');
+                        if (keyholeItem) keyholeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else if (selectedMode === 'xpress') {
+                        const emallItem = document.getElementById('stop-item-6');
+                        if (emallItem) emallItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
             });
         });
 
-        // 5. 버스 애니메이션 (기본 정지 상태)
+        // 🌐 5. 다국어(KR / EN) 즉시 전환 함수
+        function applyLanguage(lang) {
+            currentLang = lang;
+            const t = i18n[lang];
+
+            document.getElementById('ui-header-title').textContent = t.headerTitle;
+            document.getElementById('ui-header-sub').textContent = t.headerSub;
+            document.getElementById('ui-mob-title').textContent = t.mobTitle;
+            document.getElementById('langBtnDesktop').textContent = t.langBtnText;
+            document.getElementById('langBtnMobile').textContent = t.mobLangBtnText;
+
+            document.getElementById('desk-mode-day').innerHTML = t.deskDay;
+            document.getElementById('desk-mode-night').innerHTML = t.deskNight;
+            document.getElementById('desk-mode-xpress').innerHTML = t.deskXpress;
+
+            document.getElementById('mob-mode-day').textContent = t.mobDay;
+            document.getElementById('mob-mode-night').textContent = t.mobNight;
+            document.getElementById('mob-mode-xpress').textContent = t.mobXpress;
+
+            document.getElementById('ui-leg-reg').textContent = t.legReg;
+            document.getElementById('ui-leg-xp').textContent = t.legXp;
+            document.getElementById('ui-leg-cl').textContent = t.legCl;
+            document.getElementById('ui-dock-label').textContent = t.dockLabel;
+
+            playBtnDesktop.innerHTML = isPlaying ? t.playStop : t.playStart;
+            playBtnMobile.innerHTML = isPlaying ? t.mobPlayStop : t.mobPlayStart;
+            speedBtnDesktop.innerHTML = `${t.speedPrefix}${speedMultiplier}x`;
+            myLocBtnDesktop.innerHTML = t.myLoc;
+            myLocBtnMobile.innerHTML = t.mobMyLoc;
+            fitBtnDesktop.innerHTML = t.fitMap;
+            fitBtnMobile.innerHTML = t.mobFitMap;
+            followBusPill.textContent = followBus ? t.followOn : t.followOff;
+
+            stops.forEach((stop, idx) => {
+                const titleSpan = document.getElementById(`item-title-${idx}`);
+                const subSpan = document.getElementById(`item-sub-${idx}`);
+                const descP = document.getElementById(`item-desc-${idx}`);
+                const timeTag = document.getElementById(`time-tag-${idx}`);
+
+                if (titleSpan) titleSpan.textContent = getStopTitle(stop);
+                if (subSpan) subSpan.textContent = `(${getStopSubLabel(stop)})`;
+                if (descP) descP.textContent = getStopDesc(stop);
+                if (timeTag) timeTag.textContent = t.timeNoteKeyhole;
+
+                markers[idx].setPopupContent(getPopupContent(stop));
+                markers[idx].setTooltipContent(`${stop.id}. ${getStopTitle(stop)}`);
+            });
+
+            updateStatusAndListByMode(currentMode);
+
+            if (infoCardEl.classList.contains('visible') && currentActiveStop >= 0) {
+                showStopCard(currentActiveStop);
+            }
+        }
+
+        document.getElementById('langBtnDesktop').addEventListener('click', () => {
+            applyLanguage(currentLang === 'ko' ? 'en' : 'ko');
+        });
+        document.getElementById('langBtnMobile').addEventListener('click', () => {
+            applyLanguage(currentLang === 'ko' ? 'en' : 'ko');
+        });
+
+        // 6. 버스 애니메이션 + 부드러운 카메라 추적(Follow)
         const busIcon = L.divIcon({
             className: 'bus-marker',
             html: '🚌',
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
+            iconSize: [34, 34],
+            iconAnchor: [17, 17]
         });
 
         const busMarker = L.marker([stops[0].lat, stops[0].lng], { icon: busIcon, zIndexOffset: 1000 }).addTo(map);
@@ -1087,10 +1789,11 @@
         let isPlaying = false;
         let pathCursor = 0;
         let speedMultiplier = 1;
+        let isInitialZooming = false;
 
         function animateBus() {
             if (isPlaying && fullLoopPath.length > 1) {
-                pathCursor += 0.4 * speedMultiplier;
+                pathCursor += 0.35 * speedMultiplier;
 
                 if (pathCursor >= fullLoopPath.length - 1) {
                     pathCursor = 0;
@@ -1105,6 +1808,13 @@
 
                 busMarker.setLatLng([lat, lng]);
 
+                // 🎯 카메라 버스 따라가기(Follow)가 켜져 있으면 매 프레임마다 부드럽게 중심 이동
+                if (followBus && !isInitialZooming) {
+                    isProgrammaticMove = true;
+                    map.panTo([lat, lng], { animate: false });
+                    isProgrammaticMove = false;
+                }
+
                 let closestStop = -1;
                 let minDiff = Infinity;
                 stops.forEach((st, sIdx) => {
@@ -1118,52 +1828,82 @@
                     }
                 });
                 if (closestStop !== -1 && minDiff < 0.0015) {
-                    highlightStop(closestStop);
+                    const isCardVisible = infoCardEl.classList.contains('visible');
+                    highlightStop(closestStop, isCardVisible);
                 }
             }
             requestAnimationFrame(animateBus);
         }
 
-        highlightStop(0);
+        highlightStop(0, false);
         (async () => {
             await buildOfficialGpsRoute();
             requestAnimationFrame(animateBus);
         })();
 
-        // 6. 버튼 이벤트 및 스마트폰 [📍 내 위치] 찾기 기능
-        const playBtn = document.getElementById('playBtn');
-        const speedBtn = document.getElementById('speedBtn');
-        const myLocBtn = document.getElementById('myLocBtn');
-        const fitBtn = document.getElementById('fitBtn');
+        // 7. 데스크탑 & 모바일 컨트롤 버튼 동기화
+        const playBtnDesktop = document.getElementById('playBtnDesktop');
+        const speedBtnDesktop = document.getElementById('speedBtnDesktop');
+        const myLocBtnDesktop = document.getElementById('myLocBtnDesktop');
+        const fitBtnDesktop = document.getElementById('fitBtnDesktop');
 
-        playBtn.addEventListener('click', () => {
+        const playBtnMobile = document.getElementById('playBtnMobile');
+        const speedBtnMobile = document.getElementById('speedBtnMobile');
+        const myLocBtnMobile = document.getElementById('myLocBtnMobile');
+        const fitBtnMobile = document.getElementById('fitBtnMobile');
+
+        function togglePlay() {
             isPlaying = !isPlaying;
-            playBtn.innerHTML = isPlaying ? '⏸️ 일시정지' : '▶️ 버스 출발';
-            playBtn.style.background = isPlaying ? '#2563eb' : '#2a9d8f';
-        });
+            const t = i18n[currentLang];
 
-        speedBtn.addEventListener('click', () => {
+            playBtnDesktop.innerHTML = isPlaying ? t.playStop : t.playStart;
+            playBtnDesktop.style.background = isPlaying ? '#2563eb' : '#2a9d8f';
+
+            playBtnMobile.innerHTML = isPlaying ? t.mobPlayStop : t.mobPlayStart;
+            playBtnMobile.style.background = isPlaying ? '#2563eb' : '#10b981';
+
+            // 버스 출발 시 자동으로 카메라 추적 ON + 버스 위치로 부드럽게 줌인!
+            if (isPlaying) {
+                setFollowBus(true);
+                isInitialZooming = true;
+                isProgrammaticMove = true;
+                const targetZoom = Math.max(map.getZoom(), 15.5);
+                map.flyTo(busMarker.getLatLng(), targetZoom, { duration: 0.7 });
+                setTimeout(() => {
+                    isInitialZooming = false;
+                    isProgrammaticMove = false;
+                }, 750);
+            }
+        }
+
+        function toggleSpeed() {
             if (speedMultiplier === 1) speedMultiplier = 2;
             else if (speedMultiplier === 2) speedMultiplier = 4;
             else speedMultiplier = 1;
-            speedBtn.innerHTML = `⚡ 속도: ${speedMultiplier}x`;
-        });
 
-        fitBtn.addEventListener('click', () => {
+            const t = i18n[currentLang];
+            speedBtnDesktop.innerHTML = `${t.speedPrefix}${speedMultiplier}x`;
+            speedBtnMobile.innerHTML = `${speedMultiplier}x`;
+        }
+
+        function fitAllBounds() {
+            setFollowBus(false);
             const bounds = L.latLngBounds(stops.map(s => [s.lat, s.lng]));
-            map.flyToBounds(bounds, { padding: [30, 30], duration: 0.8 });
+            map.flyToBounds(bounds, { padding: [45, 45], duration: 0.8 });
             map.closePopup();
-        });
+            closeStopCard();
+        }
 
-        // 스마트폰 GPS로 내 현재 위치를 찍고 가장 가까운 '현재 운행 중인' 정류장을 알려주는 기능
         let myLocMarker = null;
-        myLocBtn.addEventListener('click', () => {
+        function findMyLocation() {
+            const t = i18n[currentLang];
             if (!navigator.geolocation) {
-                alert("이 브라우저에서는 GPS 위치 기능을 지원하지 않습니다.");
+                alert(t.gpsNotSupported);
                 return;
             }
+            setFollowBus(false);
             const statusEl = document.getElementById('route-status');
-            statusEl.innerHTML = "📡 내 현재 GPS 위치를 찾는 중...";
+            statusEl.innerHTML = t.findingGps;
 
             navigator.geolocation.getCurrentPosition((pos) => {
                 const { latitude, longitude } = pos.coords;
@@ -1175,13 +1915,13 @@
 
                 if (myLocMarker) {
                     myLocMarker.setLatLng([latitude, longitude]);
+                    myLocMarker.setPopupContent(`<strong>${t.myCurrentPos}</strong>`);
                 } else {
                     myLocMarker = L.marker([latitude, longitude], { icon: myIcon, zIndexOffset: 2000 })
                         .addTo(map)
-                        .bindPopup("<strong>📍 내 현재 위치</strong>");
+                        .bindPopup(`<strong>${t.myCurrentPos}</strong>`);
                 }
 
-                // 현재 선택한 모드(주간/야간/익스프레스)에서 실제 정차하는 가장 가까운 정류장 찾기
                 let nearestStop = stops[0];
                 let minDist = Infinity;
                 let nearestIdx = 0;
@@ -1199,12 +1939,27 @@
 
                 map.flyTo([latitude, longitude], 16, { duration: 0.8 });
                 myLocMarker.openPopup();
-                highlightStop(nearestIdx);
-                statusEl.innerHTML = `📍 가장 가까운 운행 정류장: [${nearestStop.id}] ${nearestStop.name}`;
+                highlightStop(nearestIdx, true);
+                statusEl.innerHTML = `${t.nearestFound}[${nearestStop.id}] ${getStopTitle(nearestStop)}`;
             }, () => {
-                alert("위치 권한을 허용해주시거나 HTTPS 웹 주소에서 실행해주세요.");
-                statusEl.innerHTML = "⚠️ 위치 권한 확인 필요";
+                alert(t.gpsPermError);
             }, { enableHighAccuracy: true });
+        }
+
+        playBtnDesktop.addEventListener('click', togglePlay);
+        playBtnMobile.addEventListener('click', togglePlay);
+
+        speedBtnDesktop.addEventListener('click', toggleSpeed);
+        speedBtnMobile.addEventListener('click', toggleSpeed);
+
+        fitBtnDesktop.addEventListener('click', fitAllBounds);
+        fitBtnMobile.addEventListener('click', fitAllBounds);
+
+        myLocBtnDesktop.addEventListener('click', findMyLocation);
+        myLocBtnMobile.addEventListener('click', findMyLocation);
+
+        window.addEventListener('resize', () => {
+            map.invalidateSize();
         });
     </script>
 </body>
