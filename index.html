@@ -7,6 +7,10 @@
     <!-- 카카오톡 등 SNS 공유 시 미리보기 카드 설정 (Open Graph) -->
     <meta property="og:title" content="🚌 보라카이 HOHO 버스 노선도 & 실시간 위치 (KR/EN)">
     <meta property="og:description" content="보라카이 호호버스(일반/익스프레스/야간코스) 공식 정류장 위치 및 실시간 버스 GPS 확인">
+    <!-- 빠른 지도 로딩을 위한 DNS 사전 연결 (Preconnect) -->
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://mt1.google.com">
+    <link rel="preconnect" href="https://router.project-osrm.org">
     <!-- 지도 라이브러리 (Leaflet.js) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -834,7 +838,7 @@
             <div class="legend-item"><span class="dot-closed"></span> <span id="ui-leg-cl">미운행/무정차</span></div>
         </div>
 
-        <div id="route-status">⏳ 공식 GPS 트래커 노선을 그리는 중...</div>
+        <div id="route-status">☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)</div>
         
         <div class="control-row">
             <button id="playBtnDesktop" class="btn start-btn">▶️ 노선 주행</button>
@@ -905,6 +909,8 @@
     </div>
 
     <script>
+        const ROUTE_CACHE_KEY = 'boracay_hoho_fast_route_cache_v3';
+
         // 🌐 다국어(KR / EN) 번역 사전
         let currentLang = 'ko'; // 'ko' | 'en'
 
@@ -1453,7 +1459,6 @@
             dockListEl.appendChild(dockBtn);
         });
 
-        // 모바일 하단 미니 정류장 정보 카드 업데이트
         function showStopCard(index) {
             if (index < 0 || index >= stops.length) return;
             const stop = stops[index];
@@ -1567,18 +1572,40 @@
             return dense;
         }
 
-        async function fetchOsrmCoords(waypoints) {
-            const coordsString = waypoints.map(s => `${s.lng},${s.lat}`).join(';');
-            const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&continue_straight=false`;
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
-                return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+        // ⚡ 3.5초 타임아웃이 적용된 고속 OSRM 호출 함수
+        async function fetchOsrmWithTimeout(waypoints, timeoutMs = 3500) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const coordsString = waypoints.map(s => `${s.lng},${s.lat}`).join(';');
+                const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&continue_straight=false`;
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timer);
+                const data = await response.json();
+                if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                    return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                }
+            } catch (e) {
+                clearTimeout(timer);
             }
-            throw new Error("OSRM failed");
+            return null;
         }
 
-        // 4. 구간별 노선 분리
+        // 특정 정류장 좌표와 가장 가까운 경로 배열 인덱스 찾기 (1번의 API 결과를 구간별로 쪼개기 위함)
+        function findClosestCoordIndex(coords, targetStop, fromIndex = 0) {
+            let bestIdx = fromIndex;
+            let minDist = Infinity;
+            for (let i = fromIndex; i < coords.length; i++) {
+                const d = Math.hypot(coords[i][0] - targetStop.lat, coords[i][1] - targetStop.lng);
+                if (d < minDist) {
+                    minDist = d;
+                    bestIdx = i;
+                }
+            }
+            return bestIdx;
+        }
+
+        // 4. 초고속 노선 렌더링 (즉시 렌더링 + 로컬 캐시 + 최소 API 요청)
         let dayLoopPath = [];
         let nightLoopPath = [];
         let xpressLoopPath = [];
@@ -1594,58 +1621,22 @@
         };
         let routeLayerGroup = L.layerGroup().addTo(map);
 
-        async function buildOfficialGpsRoute() {
-            const southOutWaypoints = [
-                stops[0], stops[1], stops[2], stops[4], stops[5], stops[6]
-            ];
+        const southOutWaypoints = [stops[0], stops[1], stops[2], stops[4], stops[5], stops[6]];
+        const coreOutWaypoints = [
+            stops[6], stops[7], stops[8], stops[9], stops[10],
+            stops[11], stops[12], stops[13], stops[14], stops[15],
+            stops[16], stops[17], stops[18], stops[19], stops[20]
+        ];
+        const keyholeLoopWaypoints = [stops[20], stops[21], stops[20]];
+        const northEndWaypoints = [stops[20], stops[22], stops[23]];
+        const coreInWaypoints = [
+            stops[23], stops[22], stops[19], stops[18], stops[17],
+            stops[16], stops[15], stops[14], stops[13], stops[12],
+            stops[11], stops[10], stops[9], stops[8], stops[7], stops[6]
+        ];
+        const southInWaypoints = [stops[6], stops[5], stops[4], stops[2], stops[3], stops[2], stops[1], stops[0]];
 
-            const coreOutWaypoints = [
-                stops[6], stops[7], stops[8], stops[9], stops[10],
-                stops[11], stops[12], stops[13], stops[14], stops[15],
-                stops[16], stops[17], stops[18], stops[19], stops[20]
-            ];
-
-            const keyholeLoopWaypoints = [
-                stops[20], stops[21], stops[20]
-            ];
-
-            const northEndWaypoints = [
-                stops[20], stops[22], stops[23]
-            ];
-
-            const coreInWaypoints = [
-                stops[23], stops[22], stops[19], stops[18], stops[17],
-                stops[16], stops[15], stops[14], stops[13], stops[12],
-                stops[11], stops[10], stops[9], stops[8], stops[7], stops[6]
-            ];
-
-            const southInWaypoints = [
-                stops[6], stops[5], stops[4], stops[2], stops[3],
-                stops[2], stops[1], stops[0]
-            ];
-
-            try {
-                const [southOut, coreOut, keyholeLoop, northEnd, coreIn, southIn] = await Promise.all([
-                    fetchOsrmCoords(southOutWaypoints),
-                    fetchOsrmCoords(coreOutWaypoints),
-                    fetchOsrmCoords(keyholeLoopWaypoints),
-                    fetchOsrmCoords(northEndWaypoints),
-                    fetchOsrmCoords(coreInWaypoints),
-                    fetchOsrmCoords(southInWaypoints)
-                ]);
-
-                mainRouteData = { southOut, coreOut, keyholeLoop, northEnd, coreIn, southIn };
-            } catch (err) {
-                mainRouteData = {
-                    southOut: southOutWaypoints.map(s => [s.lat, s.lng]),
-                    coreOut: coreOutWaypoints.map(s => [s.lat, s.lng]),
-                    keyholeLoop: keyholeLoopWaypoints.map(s => [s.lat, s.lng]),
-                    northEnd: northEndWaypoints.map(s => [s.lat, s.lng]),
-                    coreIn: coreInWaypoints.map(s => [s.lat, s.lng]),
-                    southIn: southInWaypoints.map(s => [s.lat, s.lng])
-                };
-            }
-
+        function rebuildLoopPathsFromSegments() {
             const dayFullCoords = [
                 ...mainRouteData.southOut,
                 ...mainRouteData.coreOut.slice(1),
@@ -1673,7 +1664,81 @@
             ];
             xpressLoopPath = densifyPath(xpressFullCoords, 0.00010);
 
+            if (currentMode === 'day') fullLoopPath = dayLoopPath;
+            else if (currentMode === 'night') fullLoopPath = nightLoopPath;
+            else if (currentMode === 'xpress') fullLoopPath = xpressLoopPath;
+        }
+
+        async function buildOfficialGpsRoute() {
+            // [1단계] 서버 응답을 기다리지 않고 0.01초 만에 즉시 기본 경로를 먼저 그려서 로딩 지연을 없앰!
+            mainRouteData = {
+                southOut: southOutWaypoints.map(s => [s.lat, s.lng]),
+                coreOut: coreOutWaypoints.map(s => [s.lat, s.lng]),
+                keyholeLoop: keyholeLoopWaypoints.map(s => [s.lat, s.lng]),
+                northEnd: northEndWaypoints.map(s => [s.lat, s.lng]),
+                coreIn: coreInWaypoints.map(s => [s.lat, s.lng]),
+                southIn: southInWaypoints.map(s => [s.lat, s.lng])
+            };
+            rebuildLoopPathsFromSegments();
             applyOperationMode(currentMode, false);
+
+            // [2단계] 브라우저 캐시(localStorage)에 정밀 도로 데이터가 있으면 서버 통신 없이 0.001초 만에 즉시 교체!
+            try {
+                const cached = localStorage.getItem(ROUTE_CACHE_KEY);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (parsed && parsed.coreOut && parsed.coreOut.length > 2) {
+                        mainRouteData = parsed;
+                        rebuildLoopPathsFromSegments();
+                        drawRouteForMode(currentMode);
+                        return;
+                    }
+                }
+            } catch (e) {}
+
+            // [3단계] 캐시가 없을 때만 백그라운드에서 딱 2번(상행 1번, 하행 1번)으로 압축해 OSRM 요청
+            const allOutWaypoints = [
+                ...southOutWaypoints,
+                ...coreOutWaypoints.slice(1),
+                stops[21],
+                stops[20],
+                stops[22],
+                stops[23]
+            ];
+            const allInWaypoints = [
+                ...coreInWaypoints,
+                ...southInWaypoints.slice(1)
+            ];
+
+            const [fullOutCoords, fullInCoords] = await Promise.all([
+                fetchOsrmWithTimeout(allOutWaypoints, 3500),
+                fetchOsrmWithTimeout(allInWaypoints, 3500)
+            ]);
+
+            if (fullOutCoords && fullInCoords) {
+                const idxS6Out = findClosestCoordIndex(fullOutCoords, stops[6], 0);
+                const idxS20First = findClosestCoordIndex(fullOutCoords, stops[20], idxS6Out);
+                const idxS21 = findClosestCoordIndex(fullOutCoords, stops[21], idxS20First);
+                const idxS20Second = findClosestCoordIndex(fullOutCoords, stops[20], idxS21);
+
+                const idxS6In = findClosestCoordIndex(fullInCoords, stops[6], 0);
+
+                mainRouteData = {
+                    southOut: fullOutCoords.slice(0, idxS6Out + 1),
+                    coreOut: fullOutCoords.slice(idxS6Out, idxS20First + 1),
+                    keyholeLoop: fullOutCoords.slice(idxS20First, idxS20Second + 1),
+                    northEnd: fullOutCoords.slice(idxS20Second),
+                    coreIn: fullInCoords.slice(0, idxS6In + 1),
+                    southIn: fullInCoords.slice(idxS6In)
+                };
+
+                try {
+                    localStorage.setItem(ROUTE_CACHE_KEY, JSON.stringify(mainRouteData));
+                } catch (e) {}
+
+                rebuildLoopPathsFromSegments();
+                drawRouteForMode(currentMode);
+            }
         }
 
         function drawActiveSegment(coords, mode) {
@@ -1915,7 +1980,7 @@
             applyLanguage(currentLang === 'ko' ? 'en' : 'ko');
         });
 
-        // 6. 버스 애니메이션 + 부드러운 카메라 추적(Follow)
+        // 6. 버스 애니메이션 (출발 중일 때만 루프 실행하여 모바일 배터리/성능 최적화!)
         const busIcon = L.divIcon({
             className: 'bus-marker',
             html: '🚌',
@@ -1926,12 +1991,18 @@
         const busMarker = L.marker([stops[0].lat, stops[0].lng], { icon: busIcon, zIndexOffset: 1000 }).addTo(map);
 
         let isPlaying = false;
+        let animFrameId = null;
         let pathCursor = 0;
         let speedMultiplier = 1;
         let isInitialZooming = false;
 
         function animateBus() {
-            if (isPlaying && fullLoopPath.length > 1) {
+            if (!isPlaying) {
+                animFrameId = null;
+                return;
+            }
+
+            if (fullLoopPath.length > 1) {
                 pathCursor += 0.35 * speedMultiplier;
 
                 if (pathCursor >= fullLoopPath.length - 1) {
@@ -1970,14 +2041,11 @@
                     highlightStop(closestStop, isCardVisible);
                 }
             }
-            requestAnimationFrame(animateBus);
+            animFrameId = requestAnimationFrame(animateBus);
         }
 
         highlightStop(0, false);
-        (async () => {
-            await buildOfficialGpsRoute();
-            requestAnimationFrame(animateBus);
-        })();
+        buildOfficialGpsRoute();
 
         // 7. 데스크탑 & 모바일 컨트롤 버튼 동기화
         const playBtnDesktop = document.getElementById('playBtnDesktop');
@@ -2010,6 +2078,10 @@
                     isInitialZooming = false;
                     isProgrammaticMove = false;
                 }, 750);
+
+                if (!animFrameId) {
+                    animFrameId = requestAnimationFrame(animateBus);
+                }
             }
         }
 
