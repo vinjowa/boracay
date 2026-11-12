@@ -234,6 +234,11 @@
             text-decoration: line-through;
             color: #64748b;
         }
+        /* 야간 주의 정류장 (푸카비치, 탐비산) 스타일 */
+        .stop-item.caution-stop {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
         .stop-badge {
             background: #2563eb;
             color: white;
@@ -257,6 +262,9 @@
         .stop-item.closed-stop .stop-badge {
             background: #94a3b8 !important;
             text-shadow: none;
+        }
+        .stop-item.caution-stop .stop-badge {
+            box-shadow: 0 0 0 2.5px #f59e0b;
         }
         .stop-item.active .stop-badge {
             background: #ef4444 !important;
@@ -299,6 +307,16 @@
             text-decoration: none !important;
             display: inline-block;
         }
+        .tag-caution-now {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #f59e0b;
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
         .stop-info p { font-size: 11px; color: #64748b; }
         .coord-text { font-size: 10px; color: #2563eb; font-family: monospace; margin-top: 2px; }
 
@@ -310,7 +328,7 @@
            ========================================================= */
         #follow-bus-pill {
             position: absolute;
-            left: 410px; /* 데스크탑에서는 사이드바 오른쪽 하단 */
+            left: 410px;
             bottom: 22px;
             z-index: 1000;
             background: rgba(15, 23, 42, 0.88);
@@ -368,7 +386,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.45);
-            transition: transform 0.22s ease, background 0.22s ease, opacity 0.22s ease;
+            transition: transform 0.22s ease, background 0.22s ease, opacity 0.22s ease, border-color 0.22s ease;
             cursor: pointer;
         }
         .custom-stop-marker.xpress-marker .marker-inner {
@@ -382,6 +400,11 @@
             opacity: 0.42;
             transform: scale(0.85);
             text-shadow: none;
+        }
+        /* 야간 주의 정류장 마커: 노란색 경고 테두리 */
+        .custom-stop-marker.marker-caution .marker-inner {
+            border-color: #facc15 !important;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.55), 0 2px 6px rgba(0,0,0,0.5);
         }
         .custom-stop-marker.highlight .marker-inner {
             background: #ef4444 !important;
@@ -443,7 +466,7 @@
                 font-size: 11px;
             }
             body.card-open #follow-bus-pill {
-                bottom: 138px;
+                bottom: 146px;
             }
 
             /* 상단 슬림 플로팅 컨트롤 패널 */
@@ -546,7 +569,7 @@
                 text-shadow: 0 1px 2px rgba(0,0,0,0.45);
             }
 
-            /* 우측 플로팅 정류장 번호 독(Dock): 맵 선택 버튼이 없어져서 맨 위(top: 10px)까지 시원하게 확장 */
+            /* 우측 플로팅 정류장 번호 독(Dock) */
             #right-stop-dock {
                 display: flex;
                 position: absolute;
@@ -602,7 +625,7 @@
                 flex-shrink: 0;
                 cursor: pointer;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.22);
-                transition: transform 0.2s, background 0.2s, opacity 0.2s;
+                transition: transform 0.2s, background 0.2s, opacity 0.2s, border-color 0.2s;
             }
             .dock-stop-btn.xpress-split {
                 background: linear-gradient(135deg, #1d4ed8 50%, #f97316 50%);
@@ -612,6 +635,10 @@
                 background: #94a3b8 !important;
                 opacity: 0.4;
                 text-shadow: none;
+            }
+            .dock-stop-btn.caution-stop {
+                border-color: #facc15 !important;
+                box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.7);
             }
             .dock-stop-btn.active {
                 background: #ef4444 !important;
@@ -715,6 +742,7 @@
             .mini-tag.xpress { background: rgba(249, 115, 22, 0.25); color: #fdba74; border: 1px solid rgba(249,115,22,0.5); }
             .mini-tag.regular { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid rgba(59,130,246,0.5); }
             .mini-tag.warn { background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); }
+            .mini-tag.caution { background: rgba(245, 158, 11, 0.25); color: #fde047; border: 1px solid rgba(245,158,11,0.6); }
         }
 
         @media (max-width: 400px) {
@@ -843,7 +871,7 @@
                 followOn: "🎯 버스 따라가기 ON",
                 followOff: "🎯 버스 따라가기 OFF",
                 statusDay: "☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)",
-                statusNight: "🌙 일몰 후 야간 모드: [S21 키홀] 마감 및 ⚡익스프레스 종료",
+                statusNight: "🌙 야간 모드: [S21 키홀] 마감 · [푸카/탐비산] 야간 주의사항 확인!",
                 statusXpress: "⚡ 익스프레스 모드: 항구(S1)/탐비산(H0) 미운행 · [S6 이몰 ↔ S23 푸카]만 운행",
                 findingGps: "📡 내 현재 GPS 위치를 찾는 중...",
                 nearestFound: "📍 가장 가까운 운행 정류장: ",
@@ -886,7 +914,7 @@
                 followOn: "🎯 Follow Bus ON",
                 followOff: "🎯 Follow Bus OFF",
                 statusDay: "☀️ Daytime Full Route (S1 Port/Tambisaan ~ S21 Keyhole ~ S23 Puka)",
-                statusNight: "🌙 After Sunset Mode: [S21 Keyhole] Closed & ⚡Xpress Ended",
+                statusNight: "🌙 Night Mode: [S21 Keyhole] Closed · Check [Puka/Tambisaan] cautions!",
                 statusXpress: "⚡ Xpress Mode: No Port(S1/H0) access · Runs [S6 EMall ↔ S23 Puka] only",
                 findingGps: "📡 Finding your current GPS location...",
                 nearestFound: "📍 Nearest Active Stop: ",
@@ -903,7 +931,7 @@
             }
         };
 
-        // 1. 24개 정류장 데이터 (세부 조정 완료된 좌표 100% 그대로 유지)
+        // 1. 24개 정류장 데이터 (세부 조정 완료된 좌표 100% 유지 + 키홀 마감 / 푸카·탐비산 야간 주의 반영)
         const stops = [
           {
             "id": "S1",
@@ -945,13 +973,15 @@
             "id": "H0",
             "label": "TAMBISAAN BEACH",
             "name": "탐비산 비치",
-            "desc": "탐비산 회차 선착장 (일반 HOHO 전용 · 익스프레스 미운행)",
-            "descEn": "Tambisaan Beach & Port turnaround stop (Regular only · No Xpress)",
+            "desc": "우기/기상 악화 시 대체 선착장 (야간 배편 없을 시 미경유 가능)",
+            "descEn": "Alternative Jetty Port (May be skipped at night if port is inactive)",
             "lat": 11.94915613,
             "lng": 121.94710225,
             "isXpress": false,
             "closesAtSunset": false,
-            "isSouthPortSection": true
+            "isSouthPortSection": true,
+            "nightCautionKo": "⚠️ 야간 선착장 미운영시 통과",
+            "nightCautionEn": "⚠️ Skipped if port closed at night"
           },
           {
             "id": "S4",
@@ -1168,12 +1198,14 @@
             "id": "S23",
             "label": "PUKA BEACH",
             "name": "푸카 비치",
-            "desc": "🏖️ 북부 종점 회차지 (일반+익스프레스 공용)",
-            "descEn": "🏖️ Puka Shell Beach Northern Terminal (Regular + Xpress)",
+            "desc": "🏖️ 북부 종점 회차지 (일몰 후 상점 마감 · 밤 9시경 남행 막차 주의)",
+            "descEn": "🏖️ Northern Terminal (Shops close after sunset · Last bus ~21:00)",
             "lat": 11.99493738,
             "lng": 121.91601813,
             "isXpress": true,
-            "closesAtSunset": false
+            "closesAtSunset": false,
+            "nightCautionKo": "⚠️ 야간 상점마감·21시경 막차",
+            "nightCautionEn": "⚠️ Dark at night · Last bus ~21:00"
           }
         ];
 
@@ -1193,7 +1225,12 @@
             return currentLang === 'en' ? stop.descEn : stop.desc;
         }
 
-        // 2. 지도 초기화 (일반 지도 고정, 우측 상단 맵 선택 컨트롤 제거)
+        function getStopNightCaution(stop) {
+            if (!stop.nightCautionKo) return '';
+            return currentLang === 'en' ? stop.nightCautionEn : stop.nightCautionKo;
+        }
+
+        // 2. 지도 초기화 (일반 지도 고정)
         const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}', {
             maxZoom: 20,
             attribution: '&copy; Google Maps'
@@ -1226,7 +1263,6 @@
             }
         });
 
-        // 사용자가 손가락이나 마우스로 지도를 직접 드래그하면 자동으로 카메라 추적 해제
         map.on('dragstart', () => {
             if (!isProgrammaticMove && followBus) {
                 setFollowBus(false);
@@ -1250,12 +1286,17 @@
                 ? `<p style="margin:2px 0 4px; font-size:11px; font-weight:bold; color:#dc2626; background:#fee2e2; padding:2px 5px; border-radius:4px; display:inline-block;">${t.sunsetWarn}</p><br>`
                 : '';
 
+            const cautionWarning = stop.nightCautionKo
+                ? `<p style="margin:2px 0 4px; font-size:11px; font-weight:bold; color:#b45309; background:#fef3c7; border:1px solid #f59e0b; padding:2px 5px; border-radius:4px; display:inline-block;">${getStopNightCaution(stop)}</p><br>`
+                : '';
+
             return `
                 <div style="font-family:sans-serif; padding:4px;">
                     ${busTypeBadge}<br>
                     <strong style="color:#1e293b; font-size:13.5px;">[${stop.id}] ${getStopTitle(stop)}</strong>
                     <p style="margin:2px 0 3px; font-size:11.5px; font-weight:bold; color:#475569;">${getStopSubLabel(stop)}</p>
                     ${timeWarning}
+                    ${cautionWarning}
                     <p style="margin:2px 0 4px; font-size:11.5px; color:#555;">${getStopDesc(stop)}</p>
                     <p style="margin:0; font-size:11px; color:#1d4ed8; font-family:monospace;">
                         📍 ${stop.lat.toFixed(6)}, ${stop.lng.toFixed(6)}
@@ -1312,6 +1353,7 @@
                         ${stop.isXpress ? `<span class="tag-xpress" id="xpress-tag-${index}">⚡Xpress</span>` : ''}
                         ${stop.closesAtSunset ? `<span class="tag-time" id="time-tag-${index}">${i18n[currentLang].timeNoteKeyhole}</span>` : ''}
                         <span class="tag-closed-now" id="closed-tag-${index}" style="display:none;"></span>
+                        <span class="tag-caution-now" id="caution-tag-${index}" style="display:none;"></span>
                     </h3>
                     <p id="item-desc-${index}">${getStopDesc(stop)}</p>
                     <div class="coord-text" id="coord-text-${index}">${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}</div>
@@ -1367,6 +1409,9 @@
             }
             if (stop.closesAtSunset) {
                 tagsHtml += `<span class="mini-tag warn">${t.sunsetWarn}</span>`;
+            }
+            if (stop.nightCautionKo) {
+                tagsHtml += `<span class="mini-tag caution">${getStopNightCaution(stop)}</span>`;
             }
             if (currentMode === 'xpress' && stop.isSouthPortSection) {
                 tagsHtml += `<span class="mini-tag warn">${t.reasonPortSkipped}</span>`;
@@ -1623,6 +1668,7 @@
                 const dockBtnEl = document.getElementById(`dock-btn-${idx}`);
                 const markerEl = document.querySelector(`.marker-${idx}`);
                 const closedTagEl = document.getElementById(`closed-tag-${idx}`);
+                const cautionTagEl = document.getElementById(`caution-tag-${idx}`);
                 const xpressTagEl = document.getElementById(`xpress-tag-${idx}`);
 
                 let isClosedOrSkipped = false;
@@ -1636,9 +1682,21 @@
                     closedReason = stop.isSouthPortSection ? t.reasonPortSkipped : t.reasonPassThrough;
                 }
 
-                if (itemEl) itemEl.classList.toggle('closed-stop', isClosedOrSkipped);
-                if (dockBtnEl) dockBtnEl.classList.toggle('closed-stop', isClosedOrSkipped);
-                if (markerEl) markerEl.classList.toggle('marker-closed', isClosedOrSkipped);
+                // 야간 모드일 때 푸카비치(S23)와 탐비산(H0) 주의 표시 활성화
+                const isNightCaution = (mode === 'night' && Boolean(stop.nightCautionKo));
+
+                if (itemEl) {
+                    itemEl.classList.toggle('closed-stop', isClosedOrSkipped);
+                    itemEl.classList.toggle('caution-stop', isNightCaution);
+                }
+                if (dockBtnEl) {
+                    dockBtnEl.classList.toggle('closed-stop', isClosedOrSkipped);
+                    dockBtnEl.classList.toggle('caution-stop', isNightCaution);
+                }
+                if (markerEl) {
+                    markerEl.classList.toggle('marker-closed', isClosedOrSkipped);
+                    markerEl.classList.toggle('marker-caution', isNightCaution);
+                }
 
                 if (closedTagEl) {
                     if (isClosedOrSkipped) {
@@ -1646,6 +1704,15 @@
                         closedTagEl.textContent = closedReason;
                     } else {
                         closedTagEl.style.display = 'none';
+                    }
+                }
+
+                if (cautionTagEl) {
+                    if (isNightCaution) {
+                        cautionTagEl.style.display = 'inline-block';
+                        cautionTagEl.textContent = getStopNightCaution(stop);
+                    } else {
+                        cautionTagEl.style.display = 'none';
                     }
                 }
 
