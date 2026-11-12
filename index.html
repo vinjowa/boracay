@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>보라카이 HOHO 버스 실시간 노선도 | Boracay HOHO Bus Map</title>
+    <title>보라카이 HOHO 버스 실시간 노선도 | 조와부부</title>
     <!-- 카카오톡 등 SNS 공유 시 미리보기 카드 설정 (Open Graph) -->
-    <meta property="og:title" content="🚌 보라카이 HOHO 버스 노선도 & 실시간 위치 (KR/EN)">
+    <meta property="og:title" content="🚌 보라카이 HOHO 버스 노선도 (by 조와부부)">
     <meta property="og:description" content="보라카이 호호버스(일반/익스프레스/야간코스) 공식 정류장 위치 및 실시간 버스 GPS 확인">
-    <!-- 빠른 지도 타일 로딩을 위한 DNS 사전 연결 -->
-    <link rel="preconnect" href="https://mt1.google.com">
-    <link rel="preconnect" href="https://unpkg.com">
     <!-- 지도 라이브러리 (Leaflet.js) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -55,11 +52,46 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 3px;
         }
-        #header h1 { font-size: 15.5px; text-align: left; }
+        #header h1 { font-size: 15px; text-align: left; white-space: nowrap; }
         #header p { font-size: 10.5px; opacity: 0.95; text-align: left; }
+
+        .header-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        /* 📺 유튜브 출처 미니 로고 배지 (조와부부) */
+        .yt-badge-link {
+            background: rgba(15, 23, 42, 0.82);
+            color: #ffffff;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 14px;
+            padding: 3px 9px;
+            font-size: 11px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: transform 0.15s, background 0.2s;
+        }
+        .yt-badge-link:hover {
+            background: #0f172a;
+            transform: translateY(-1px);
+        }
+        .yt-badge-link:active { transform: scale(0.95); }
+        .yt-icon-svg {
+            width: 15px;
+            height: 11px;
+            flex-shrink: 0;
+            display: block;
+        }
 
         /* 언어 전환 버튼 (KR/EN) */
         .lang-btn {
@@ -67,8 +99,8 @@
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 14px;
-            padding: 3px 9px;
-            font-size: 11px;
+            padding: 3px 8px;
+            font-size: 10.5px;
             font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
@@ -160,13 +192,13 @@
 
         /* 상태 표시줄 */
         #route-status {
-            background: #dcfce7;
-            color: #166534;
+            background: #dbeafe;
+            color: #1e40af;
             font-size: 11px;
             font-weight: bold;
             text-align: center;
             padding: 5px 10px;
-            border-bottom: 1px solid #bbf7d0;
+            border-bottom: 1px solid #bfdbfe;
             transition: all 0.3s;
         }
 
@@ -365,7 +397,7 @@
         #map { flex: 1; height: 100%; background: #a2d2ff; z-index: 1; }
 
         /* =========================================================
-           2. 하단 플로팅 알약 버튼 그룹 (버스 따라가기 + 실시간 실제버스 새창)
+           2. 하단 플로팅 알약 버튼 그룹 (버스 따라가기 + 실시간버스 + 조와부부 유튜브)
            ========================================================= */
         #bottom-pill-group {
             position: absolute;
@@ -373,7 +405,8 @@
             bottom: 22px;
             z-index: 1000;
             display: flex;
-            gap: 7px;
+            flex-wrap: wrap;
+            gap: 6px;
             align-items: center;
             transition: bottom 0.25s ease;
         }
@@ -385,8 +418,8 @@
             text-decoration: none;
             border: 1.5px solid rgba(255, 255, 255, 0.35);
             border-radius: 20px;
-            padding: 7px 12px;
-            font-size: 11.5px;
+            padding: 7px 11px;
+            font-size: 11px;
             font-weight: 800;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -405,6 +438,15 @@
         #live-bus-pill {
             background: linear-gradient(135deg, #7c3aed, #db2777);
             border-color: #f9a8d4;
+        }
+        #yt-bottom-pill {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: rgba(239, 68, 68, 0.75);
+            padding: 7px 11px;
+        }
+        #yt-bottom-pill:hover {
+            background: #0f172a;
+            border-color: #ef4444;
         }
 
         /* =========================================================
@@ -512,13 +554,14 @@
 
             /* 모바일에서 하단 알약 버튼 그룹 위치 */
             #bottom-pill-group {
-                left: 12px;
+                left: 10px;
+                right: 62px;
                 bottom: 20px;
-                gap: 6px;
+                gap: 5px;
             }
             .bottom-pill-btn {
-                padding: 7px 10px;
-                font-size: 11px;
+                padding: 6px 9px;
+                font-size: 10.5px;
             }
             body.card-open #bottom-pill-group {
                 bottom: 146px;
@@ -810,8 +853,18 @@
     <div id="sidebar">
         <div id="header">
             <div class="header-top-row">
-                <h1 id="ui-header-title">🚌 보라카이 HOHO 버스 노선도</h1>
-                <button id="langBtnDesktop" class="lang-btn">🌐 EN</button>
+                <h1 id="ui-header-title">🚌 보라카이 HOHO 노선도</h1>
+                <div class="header-right-actions">
+                    <!-- 데스크탑 헤더 우측 유튜브 조와부부 미니 로고 배지 -->
+                    <a id="ytLinkDesktop" href="https://www.youtube.com/@jowa" target="_blank" rel="noopener noreferrer" class="yt-badge-link" title="유튜브 조와부부 (@jowa) 바로가기">
+                        <svg class="yt-icon-svg" viewBox="0 0 24 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M23.5 2.7C23.2 1.6 22.4 0.8 21.3 0.5C19.4 0 12 0 12 0C12 0 4.6 0 2.7 0.5C1.6 0.8 0.8 1.6 0.5 2.7C0 4.6 0 8.5 0 8.5C0 8.5 0 12.4 0.5 14.3C0.8 15.4 1.6 16.2 2.7 16.5C4.6 17 12 17 12 17C12 17 19.4 17 21.3 16.5C22.4 16.2 23.2 15.4 23.5 14.3C24 12.4 24 8.5 24 8.5C24 8.5 24 4.6 23.5 2.7Z" fill="#FF0000"/>
+                            <path d="M9.6 12.1L15.8 8.5L9.6 4.9V12.1Z" fill="#FFFFFF"/>
+                        </svg>
+                        <span id="ui-yt-desk">조와부부</span>
+                    </a>
+                    <button id="langBtnDesktop" class="lang-btn">🌐 EN</button>
+                </div>
             </div>
             <p id="ui-header-sub">시간대/버스 종류를 선택하면 실제 운행 구간이 표시됩니다</p>
         </div>
@@ -837,7 +890,7 @@
             <div class="legend-item"><span class="dot-closed"></span> <span id="ui-leg-cl">미운행/무정차</span></div>
         </div>
 
-        <div id="route-status">☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)</div>
+        <div id="route-status">⏳ 도로 노선을 불러오는 중...</div>
         
         <div class="control-row">
             <button id="playBtnDesktop" class="btn start-btn">▶️ 노선 주행</button>
@@ -860,12 +913,19 @@
     <!-- 🗺️ 2. 지도 영역 -->
     <div id="map"></div>
 
-    <!-- 🎯 하단 플로팅 알약 버튼 (버스 따라가기 + 공식 실시간 실제버스 GPS 새창 바로가기) -->
+    <!-- 🎯 하단 플로팅 알약 버튼 (버스 따라가기 + 실시간 실제버스 + 조와부부 유튜브 채널) -->
     <div id="bottom-pill-group">
-        <button id="follow-bus-pill" class="bottom-pill-btn following">🎯 버스 따라가기 ON</button>
+        <button id="follow-bus-pill" class="bottom-pill-btn following">🎯 따라가기 ON</button>
         <a href="https://tinyurl.com/findHOHO" target="_blank" rel="noopener noreferrer" id="live-bus-pill" class="bottom-pill-btn">
             <span class="pulse-dot"></span>
-            <span id="ui-live-btn-mob">📡 실시간 실제버스 ↗</span>
+            <span id="ui-live-btn-mob">📡 실시간버스 ↗</span>
+        </a>
+        <a id="yt-bottom-pill" href="https://www.youtube.com/@jowa" target="_blank" rel="noopener noreferrer" class="bottom-pill-btn" title="유튜브 조와부부 (@jowa) 바로가기">
+            <svg class="yt-icon-svg" viewBox="0 0 24 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23.5 2.7C23.2 1.6 22.4 0.8 21.3 0.5C19.4 0 12 0 12 0C12 0 4.6 0 2.7 0.5C1.6 0.8 0.8 1.6 0.5 2.7C0 4.6 0 8.5 0 8.5C0 8.5 0 12.4 0.5 14.3C0.8 15.4 1.6 16.2 2.7 16.5C4.6 17 12 17 12 17C12 17 19.4 17 21.3 16.5C22.4 16.2 23.2 15.4 23.5 14.3C24 12.4 24 8.5 24 8.5C24 8.5 24 4.6 23.5 2.7Z" fill="#FF0000"/>
+                <path d="M9.6 12.1L15.8 8.5L9.6 4.9V12.1Z" fill="#FFFFFF"/>
+            </svg>
+            <span id="ui-yt-mob">조와부부</span>
         </a>
     </div>
 
@@ -908,14 +968,17 @@
     </div>
 
     <script>
+        const ROUTE_CACHE_KEY = 'boracay_hoho_osrm_3calls_v1';
+
         // 🌐 다국어(KR / EN) 번역 사전
         let currentLang = 'ko'; // 'ko' | 'en'
 
         const i18n = {
             ko: {
-                headerTitle: "🚌 보라카이 HOHO 버스 노선도",
+                headerTitle: "🚌 보라카이 HOHO 노선도",
                 headerSub: "시간대/버스 종류를 선택하면 실제 운행 구간이 표시됩니다",
                 mobTitle: "보라카이",
+                ytTitle: "조와부부",
                 langBtnText: "🌐 EN",
                 mobLangBtnText: "EN",
                 deskDay: "☀️ 주간 전체<small>06:00~17:30 (24곳)</small>",
@@ -937,10 +1000,10 @@
                 mobMyLoc: "📍 내위치",
                 fitMap: "🔍 전체맵",
                 mobFitMap: "🔍 전체",
-                followOn: "🎯 버스 따라가기 ON",
-                followOff: "🎯 버스 따라가기 OFF",
+                followOn: "🎯 따라가기 ON",
+                followOff: "🎯 따라가기 OFF",
                 liveBtnDesk: "📡 실제 운행 버스 실시간 GPS 보기 (새 창 열기 ↗)",
-                liveBtnMob: "📡 실시간 실제버스 ↗",
+                liveBtnMob: "📡 실시간버스 ↗",
                 statusDay: "☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)",
                 statusNight: "🌙 야간 모드: [S21 키홀] 마감 · [푸카/탐비산] 야간 주의사항 확인!",
                 statusXpress: "⚡ 익스프레스 모드: 항구(S1)/탐비산(H0) 미운행 · [S6 이몰 ↔ S23 푸카]만 운행",
@@ -958,9 +1021,10 @@
                 reasonPassThrough: "무정차 통과"
             },
             en: {
-                headerTitle: "🚌 Boracay HOHO Bus Route Map",
+                headerTitle: "🚌 Boracay HOHO Map",
                 headerSub: "Select time or bus type to view active stops & routes",
                 mobTitle: "HOHO",
+                ytTitle: "Jowa Couple",
                 langBtnText: "🌐 KR",
                 mobLangBtnText: "KR",
                 deskDay: "☀️ Daytime All<small>06:00~17:30 (24 Stops)</small>",
@@ -982,10 +1046,10 @@
                 mobMyLoc: "📍 GPS",
                 fitMap: "🔍 Fit Map",
                 mobFitMap: "🔍 All",
-                followOn: "🎯 Follow Bus ON",
-                followOff: "🎯 Follow Bus OFF",
+                followOn: "🎯 Follow ON",
+                followOff: "🎯 Follow OFF",
                 liveBtnDesk: "📡 Official Real-Time Bus GPS (Open New Tab ↗)",
-                liveBtnMob: "📡 Live Bus GPS ↗",
+                liveBtnMob: "📡 Live GPS ↗",
                 statusDay: "☀️ Daytime Full Route (S1 Port/Tambisaan ~ S21 Keyhole ~ S23 Puka)",
                 statusNight: "🌙 Night Mode: [S21 Keyhole] Closed · Check [Puka/Tambisaan] cautions!",
                 statusXpress: "⚡ Xpress Mode: No Port(S1/H0) access · Runs [S6 EMall ↔ S23 Puka] only",
@@ -1569,147 +1633,169 @@
             return dense;
         }
 
-        // ⚡ 4. 외부 서버(OSRM) 대기 시간 0초! 보라카이 실제 도로 곡선 좌표 완전 내장(Pre-baked)
-        const mainRouteData = {
-            // S1(카그반) -> S2 -> S3 -> S4(로터리) -> S5 -> S6(이몰)
-            southOut: [
-                [stops[0].lat, stops[0].lng],
-                [11.94085, 121.94065],
-                [stops[1].lat, stops[1].lng],
-                [11.94380, 121.94155],
-                [11.94650, 121.94020],
-                [stops[2].lat, stops[2].lng],
-                [11.94885, 121.93810],
-                [stops[4].lat, stops[4].lng],
-                [stops[5].lat, stops[5].lng],
-                [11.95240, 121.93320],
-                [stops[6].lat, stops[6].lng]
-            ],
-            // S6(이몰) -> 디몰 -> S11(불라복 루프) -> S15(윌리스락) -> S19(시티몰) -> S20(뉴코스트)
-            coreOut: [
-                [stops[6].lat, stops[6].lng],
-                [11.95560, 121.93105],
-                [stops[7].lat, stops[7].lng],
-                [stops[8].lat, stops[8].lng],
-                [stops[9].lat, stops[9].lng],
-                [stops[10].lat, stops[10].lng],
-                [11.96365, 121.92815],
-                [stops[11].lat, stops[11].lng],
-                [11.96655, 121.92695],
-                [stops[12].lat, stops[12].lng],
-                [stops[13].lat, stops[13].lng],
-                [stops[14].lat, stops[14].lng],
-                [stops[15].lat, stops[15].lng],
-                [stops[16].lat, stops[16].lng],
-                [stops[17].lat, stops[17].lng],
-                [stops[18].lat, stops[18].lng],
-                [11.97720, 121.91950],
-                [stops[19].lat, stops[19].lng],
-                [11.98180, 121.91980],
-                [11.98395, 121.91920],
-                [stops[20].lat, stops[20].lng]
-            ],
-            // S20(뉴코스트) <-> S21(키홀 해안도로 왕복)
-            keyholeLoop: [
-                [stops[20].lat, stops[20].lng],
-                [11.98460, 121.92340],
-                [11.98320, 121.92660],
-                [stops[21].lat, stops[21].lng],
-                [11.98320, 121.92660],
-                [11.98460, 121.92340],
-                [stops[20].lat, stops[20].lng]
-            ],
-            // S20(뉴코스트) -> S22(알타비스타) -> S23(푸카비치)
-            northEnd: [
-                [stops[20].lat, stops[20].lng],
-                [11.98480, 121.91810],
-                [11.98620, 121.91540],
-                [stops[22].lat, stops[22].lng],
-                [11.99050, 121.91360],
-                [11.99290, 121.91480],
-                [stops[23].lat, stops[23].lng]
-            ],
-            // S23(푸카비치) -> S22 -> S19(시티몰 직행) -> S6(이몰)
-            coreIn: [
-                [stops[23].lat, stops[23].lng],
-                [11.99290, 121.91480],
-                [11.99050, 121.91360],
-                [stops[22].lat, stops[22].lng],
-                [11.98520, 121.91620],
-                [11.98220, 121.91920],
-                [stops[19].lat, stops[19].lng],
-                [11.97720, 121.91950],
-                [stops[18].lat, stops[18].lng],
-                [stops[17].lat, stops[17].lng],
-                [stops[16].lat, stops[16].lng],
-                [stops[15].lat, stops[15].lng],
-                [stops[14].lat, stops[14].lng],
-                [stops[13].lat, stops[13].lng],
-                [stops[12].lat, stops[12].lng],
-                [11.96655, 121.92695],
-                [stops[11].lat, stops[11].lng],
-                [11.96365, 121.92815],
-                [stops[10].lat, stops[10].lng],
-                [stops[9].lat, stops[9].lng],
-                [stops[8].lat, stops[8].lng],
-                [stops[7].lat, stops[7].lng],
-                [11.95560, 121.93105],
-                [stops[6].lat, stops[6].lng]
-            ],
-            // S6(이몰) -> S4 -> S3 -> H0(탐비산 왕복) -> S2 -> S1(카그반)
-            southIn: [
-                [stops[6].lat, stops[6].lng],
-                [11.95240, 121.93320],
-                [stops[5].lat, stops[5].lng],
-                [stops[4].lat, stops[4].lng],
-                [11.94885, 121.93810],
-                [stops[2].lat, stops[2].lng],
-                [11.94925, 121.94320],
-                [stops[3].lat, stops[3].lng],
-                [11.94925, 121.94320],
-                [stops[2].lat, stops[2].lng],
-                [11.94650, 121.94020],
-                [11.94380, 121.94155],
-                [stops[1].lat, stops[1].lng],
-                [11.94085, 121.94065],
-                [stops[0].lat, stops[0].lng]
-            ]
+        async function fetchOsrmCoords(waypoints) {
+            const coordsString = waypoints.map(s => `${s.lng},${s.lat}`).join(';');
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&continue_straight=false`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+            }
+            throw new Error("OSRM failed");
+        }
+
+        function findNearestIdx(coords, stop, startIdx = 0) {
+            let best = startIdx;
+            let minD = Infinity;
+            for (let i = startIdx; i < coords.length; i++) {
+                const d = Math.hypot(coords[i][0] - stop.lat, coords[i][1] - stop.lng);
+                if (d < minD) {
+                    minD = d;
+                    best = i;
+                }
+            }
+            return best;
+        }
+
+        // 4. 원래 완벽하게 작동하던 '3개 구간 요청' 방식 그대로 복구 + 3개 결과를 구간별로 정밀 분할!
+        let mainRouteData = {
+            southOut: [],
+            coreOut: [],
+            keyholeLoop: [],
+            northEnd: [],
+            coreIn: [],
+            southIn: []
         };
 
-        const dayLoopPath = densifyPath([
-            ...mainRouteData.southOut,
-            ...mainRouteData.coreOut.slice(1),
-            ...mainRouteData.keyholeLoop.slice(1),
-            ...mainRouteData.northEnd.slice(1),
-            ...mainRouteData.coreIn.slice(1),
-            ...mainRouteData.southIn.slice(1)
-        ], 0.00010);
-
-        const nightLoopPath = densifyPath([
-            ...mainRouteData.southOut,
-            ...mainRouteData.coreOut.slice(1),
-            ...mainRouteData.northEnd.slice(1),
-            ...mainRouteData.coreIn.slice(1),
-            ...mainRouteData.southIn.slice(1)
-        ], 0.00010);
-
-        const xpressLoopPath = densifyPath([
-            ...mainRouteData.coreOut,
-            ...mainRouteData.keyholeLoop.slice(1),
-            ...mainRouteData.northEnd.slice(1),
-            ...mainRouteData.coreIn.slice(1)
-        ], 0.00010);
-
-        let fullLoopPath = dayLoopPath;
+        let dayLoopPath = [];
+        let nightLoopPath = [];
+        let xpressLoopPath = [];
+        let fullLoopPath = [];
         let routeLayerGroup = L.layerGroup().addTo(map);
 
+        function sliceAndBuildSegments(coordsPart1, coordsPart2, inboundCoords) {
+            // coordsPart1: S1 ~ S6 ~ S20 ~ S21(키홀 끝)
+            const idxS6Out = findNearestIdx(coordsPart1, stops[6], 0);
+            const idxS20Out = findNearestIdx(coordsPart1, stops[20], idxS6Out);
+
+            // coordsPart2: S21(키홀 끝) ~ S20(복귀) ~ S22 ~ S23(푸카)
+            const idxS20Back = findNearestIdx(coordsPart2, stops[20], 0);
+
+            // inboundCoords: S23(푸카) ~ S6(이몰) ~ H0(탐비산) ~ S1(카그반)
+            const idxS6In = findNearestIdx(inboundCoords, stops[6], 0);
+
+            mainRouteData = {
+                southOut: coordsPart1.slice(0, idxS6Out + 1),
+                coreOut: coordsPart1.slice(idxS6Out, idxS20Out + 1),
+                keyholeLoop: [
+                    ...coordsPart1.slice(idxS20Out),
+                    ...coordsPart2.slice(1, idxS20Back + 1)
+                ],
+                northEnd: coordsPart2.slice(idxS20Back),
+                coreIn: inboundCoords.slice(0, idxS6In + 1),
+                southIn: inboundCoords.slice(idxS6In)
+            };
+
+            dayLoopPath = densifyPath([
+                ...mainRouteData.southOut,
+                ...mainRouteData.coreOut.slice(1),
+                ...mainRouteData.keyholeLoop.slice(1),
+                ...mainRouteData.northEnd.slice(1),
+                ...mainRouteData.coreIn.slice(1),
+                ...mainRouteData.southIn.slice(1)
+            ], 0.00010);
+
+            nightLoopPath = densifyPath([
+                ...mainRouteData.southOut,
+                ...mainRouteData.coreOut.slice(1),
+                ...mainRouteData.northEnd.slice(1),
+                ...mainRouteData.coreIn.slice(1),
+                ...mainRouteData.southIn.slice(1)
+            ], 0.00010);
+
+            xpressLoopPath = densifyPath([
+                ...mainRouteData.coreOut,
+                ...mainRouteData.keyholeLoop.slice(1),
+                ...mainRouteData.northEnd.slice(1),
+                ...mainRouteData.coreIn.slice(1)
+            ], 0.00010);
+
+            if (currentMode === 'day') fullLoopPath = dayLoopPath;
+            else if (currentMode === 'night') fullLoopPath = nightLoopPath;
+            else if (currentMode === 'xpress') fullLoopPath = xpressLoopPath;
+        }
+
+        async function buildOfficialGpsRoute() {
+            // 1) 이미 캐시에 도로 경로가 있으면 기다림 없이 0.001초 만에 즉시 그리기
+            try {
+                const cached = localStorage.getItem(ROUTE_CACHE_KEY);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (parsed && parsed.c1 && parsed.c2 && parsed.c3 && parsed.c1.length > 50) {
+                        sliceAndBuildSegments(parsed.c1, parsed.c2, parsed.c3);
+                        applyOperationMode(currentMode, false);
+                        return;
+                    }
+                }
+            } catch (e) {}
+
+            // 2) 원래 완벽하게 작동하던 3개 구간 Waypoints 그대로 요청
+            const outboundPart1 = [
+                stops[0], stops[1], stops[2], stops[4], stops[5],
+                stops[6], stops[7], stops[8], stops[9], stops[10],
+                stops[11], stops[12], stops[13], stops[14], stops[15],
+                stops[16], stops[17], stops[18], stops[19], stops[20],
+                stops[21]
+            ];
+
+            const outboundPart2 = [
+                stops[21], stops[20], stops[22], stops[23]
+            ];
+
+            const inboundWaypoints = [
+                stops[23], stops[22], stops[19], stops[18], stops[17],
+                stops[16], stops[15], stops[14], stops[13], stops[12],
+                stops[11], stops[10], stops[9], stops[8], stops[7],
+                stops[6], stops[5], stops[4], stops[2], stops[3],
+                stops[2], stops[1], stops[0]
+            ];
+
+            try {
+                const [coordsPart1, coordsPart2, inboundCoords] = await Promise.all([
+                    fetchOsrmCoords(outboundPart1),
+                    fetchOsrmCoords(outboundPart2),
+                    fetchOsrmCoords(inboundWaypoints)
+                ]);
+
+                try {
+                    localStorage.setItem(ROUTE_CACHE_KEY, JSON.stringify({
+                        c1: coordsPart1,
+                        c2: coordsPart2,
+                        c3: inboundCoords
+                    }));
+                } catch (e) {}
+
+                sliceAndBuildSegments(coordsPart1, coordsPart2, inboundCoords);
+                applyOperationMode(currentMode, false);
+            } catch (err) {
+                // 완전히 오프라인일 때만 비상용 연결
+                sliceAndBuildSegments(
+                    outboundPart1.map(s => [s.lat, s.lng]),
+                    outboundPart2.map(s => [s.lat, s.lng]),
+                    inboundWaypoints.map(s => [s.lat, s.lng])
+                );
+                applyOperationMode(currentMode, false);
+            }
+        }
+
         function drawActiveSegment(coords, mode) {
+            if (!coords || coords.length < 2) return;
             const outerColor = mode === 'xpress' ? '#f97316' : (mode === 'night' ? '#3b82f6' : '#2563eb');
             const innerColor = mode === 'xpress' ? '#c2410c' : (mode === 'night' ? '#1e3a8a' : '#1d4ed8');
 
             L.polyline(coords, {
                 color: outerColor,
-                weight: 11,
+                weight: 12,
                 opacity: 0.45,
                 lineCap: 'round',
                 lineJoin: 'round'
@@ -1724,6 +1810,7 @@
         }
 
         function drawInactiveSegment(coords) {
+            if (!coords || coords.length < 2) return;
             L.polyline(coords, {
                 color: '#64748b',
                 weight: 3.5,
@@ -1735,6 +1822,7 @@
 
         function drawRouteForMode(mode) {
             routeLayerGroup.clearLayers();
+            if (!mainRouteData.coreOut.length) return;
 
             drawActiveSegment(mainRouteData.coreOut, mode);
             drawActiveSegment(mainRouteData.northEnd, mode);
@@ -1831,7 +1919,7 @@
             }
         }
 
-        // 5. 버스 마커 생성 및 즉시 노선 표시 (0.00초 대기!)
+        // 5. 버스 마커 생성
         const busIcon = L.divIcon({
             className: 'bus-marker',
             html: '🚌',
@@ -1900,6 +1988,8 @@
             document.getElementById('ui-header-title').textContent = t.headerTitle;
             document.getElementById('ui-header-sub').textContent = t.headerSub;
             document.getElementById('ui-mob-title').textContent = t.mobTitle;
+            document.getElementById('ui-yt-desk').textContent = t.ytTitle;
+            document.getElementById('ui-yt-mob').textContent = t.ytTitle;
             document.getElementById('langBtnDesktop').textContent = t.langBtnText;
             document.getElementById('langBtnMobile').textContent = t.mobLangBtnText;
 
@@ -2005,8 +2095,8 @@
             animFrameId = requestAnimationFrame(animateBus);
         }
 
-        // 페이지 열리자마자 서버 대기 없이 즉시 그리기!
-        applyOperationMode('day', false);
+        highlightStop(0, false);
+        buildOfficialGpsRoute();
 
         // 7. 데스크탑 & 모바일 컨트롤 버튼 동기화
         const playBtnDesktop = document.getElementById('playBtnDesktop');
