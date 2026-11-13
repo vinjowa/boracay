@@ -299,6 +299,7 @@
             background: #fef2f2;
             box-shadow: 0 2px 8px rgba(239,68,68,0.2);
         }
+        /* 야간 마감 정류장(키홀): 회색 처리 */
         .stop-item.closed-stop {
             background: #f1f5f9;
             border-color: #cbd5e1;
@@ -307,6 +308,10 @@
         .stop-item.closed-stop h3 {
             text-decoration: line-through;
             color: #64748b;
+        }
+        /* 익스프레스 미정차 정류장: 아예 안 보이게 완전 숨김! */
+        .stop-item.hidden-stop {
+            display: none !important;
         }
         .stop-item.caution-stop {
             border-color: #f59e0b;
@@ -495,6 +500,10 @@
             opacity: 0.42;
             transform: scale(0.85);
             text-shadow: none;
+        }
+        /* 익스프레스 모드에서 미정차 정류장 마커 완전 숨김! */
+        .custom-stop-marker.marker-hidden {
+            display: none !important;
         }
         .custom-stop-marker.marker-caution .marker-inner {
             border-color: #facc15 !important;
@@ -734,6 +743,10 @@
                 opacity: 0.4;
                 text-shadow: none;
             }
+            /* 익스프레스 미정차 번호 버튼 완전 숨김! */
+            .dock-stop-btn.hidden-stop {
+                display: none !important;
+            }
             .dock-stop-btn.caution-stop {
                 border-color: #facc15 !important;
                 box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.7);
@@ -887,7 +900,7 @@
         <div id="legend-bar">
             <div class="legend-item"><span class="dot-regular"></span> <span id="ui-leg-reg">일반 정류장</span></div>
             <div class="legend-item"><span class="dot-xpress"></span> <span id="ui-leg-xp">일반+익스프레스</span></div>
-            <div class="legend-item"><span class="dot-closed"></span> <span id="ui-leg-cl">미운행/무정차</span></div>
+            <div class="legend-item"><span class="dot-closed"></span> <span id="ui-leg-cl">야간 마감</span></div>
         </div>
 
         <div id="route-status">⏳ 도로 노선을 불러오는 중...</div>
@@ -983,13 +996,13 @@
                 mobLangBtnText: "EN",
                 deskDay: "☀️ 주간 전체<small>06:00~17:30 (24곳)</small>",
                 deskNight: "🌙 일몰 후 야간<small>17:30~22:00 (키홀마감)</small>",
-                deskXpress: "⚡ 익스프레스만<small>~17:00 (S6~푸카 8곳)</small>",
+                deskXpress: "⚡ 익스프레스만<small>~17:00 (핵심 8곳만 표시)</small>",
                 mobDay: "☀️ 주간(전체)",
                 mobNight: "🌙 야간(17:30~)",
                 mobXpress: "⚡ 익스프레스",
                 legReg: "일반 정류장",
                 legXp: "일반+익스프레스",
-                legCl: "미운행/무정차",
+                legCl: "야간 마감",
                 dockLabel: "정류장",
                 playStart: "▶️ 노선 주행",
                 playStop: "⏸️ 일시정지",
@@ -1006,7 +1019,7 @@
                 liveBtnMob: "📡 실시간버스 ↗",
                 statusDay: "☀️ 주간 전체 운행 모드 (S1 항구/탐비산 ~ S21 키홀 ~ S23 푸카 전 구간)",
                 statusNight: "🌙 야간 모드: [S21 키홀] 마감 · [푸카/탐비산] 야간 주의사항 확인!",
-                statusXpress: "⚡ 익스프레스 모드: 항구(S1)/탐비산(H0) 미운행 · [S6 이몰 ↔ S23 푸카]만 운행",
+                statusXpress: "⚡ 익스프레스 모드: 정차하는 핵심 8개 정류장만 지도에 표시됩니다",
                 findingGps: "📡 내 현재 GPS 위치를 찾는 중...",
                 nearestFound: "📍 가장 가까운 운행 정류장: ",
                 myCurrentPos: "📍 내 현재 위치",
@@ -1016,9 +1029,7 @@
                 badgeRegOnly: "🚌 일반 HOHO 전용 (⚡익스프레스 미정차)",
                 sunsetWarn: "⏰ 17:30 마지막 운행 (일몰 후 미경유)",
                 timeNoteKeyhole: "⏰ 17:30 마감",
-                reasonNightClosed: "🌙 야간 미운행",
-                reasonPortSkipped: "🚫 항구측 미운행",
-                reasonPassThrough: "무정차 통과"
+                reasonNightClosed: "🌙 야간 미운행"
             },
             en: {
                 headerTitle: "🚌 Boracay HOHO Map",
@@ -1029,13 +1040,13 @@
                 mobLangBtnText: "KR",
                 deskDay: "☀️ Daytime All<small>06:00~17:30 (24 Stops)</small>",
                 deskNight: "🌙 Night Mode<small>17:30~22:00 (No Keyhole)</small>",
-                deskXpress: "⚡ Xpress Only<small>~17:00 (S6~Puka 8 Stops)</small>",
+                deskXpress: "⚡ Xpress Only<small>~17:00 (8 Stops Only)</small>",
                 mobDay: "☀️ Day (All)",
                 mobNight: "🌙 Night (17:30~)",
                 mobXpress: "⚡ Xpress",
                 legReg: "Regular Only",
                 legXp: "Regular + Xpress",
-                legCl: "Closed / Skipped",
+                legCl: "Night Closed",
                 dockLabel: "STOPS",
                 playStart: "▶️ Sim Route",
                 playStop: "⏸️ Pause",
@@ -1052,7 +1063,7 @@
                 liveBtnMob: "📡 Live GPS ↗",
                 statusDay: "☀️ Daytime Full Route (S1 Port/Tambisaan ~ S21 Keyhole ~ S23 Puka)",
                 statusNight: "🌙 Night Mode: [S21 Keyhole] Closed · Check [Puka/Tambisaan] cautions!",
-                statusXpress: "⚡ Xpress Mode: No Port(S1/H0) access · Runs [S6 EMall ↔ S23 Puka] only",
+                statusXpress: "⚡ Xpress Mode: Showing only the 8 active Xpress stops on map",
                 findingGps: "📡 Finding your current GPS location...",
                 nearestFound: "📍 Nearest Active Stop: ",
                 myCurrentPos: "📍 You are here",
@@ -1062,9 +1073,7 @@
                 badgeRegOnly: "🚌 Regular HOHO Only (⚡No Xpress)",
                 sunsetWarn: "⏰ Last Bus 17:30 (Closed after sunset)",
                 timeNoteKeyhole: "⏰ Ends 17:30",
-                reasonNightClosed: "🌙 Closed at Night",
-                reasonPortSkipped: "🚫 No Xpress Service",
-                reasonPassThrough: "Pass Through"
+                reasonNightClosed: "🌙 Closed at Night"
             }
         };
 
@@ -1549,9 +1558,6 @@
             if (stop.nightCautionKo) {
                 tagsHtml += `<span class="mini-tag caution">${getStopNightCaution(stop)}</span>`;
             }
-            if (currentMode === 'xpress' && stop.isSouthPortSection) {
-                tagsHtml += `<span class="mini-tag warn">${t.reasonPortSkipped}</span>`;
-            }
 
             tagsEl.innerHTML = tagsHtml;
             infoCardEl.classList.add('visible');
@@ -1657,7 +1663,7 @@
             return best;
         }
 
-        // 4. 원래 완벽하게 작동하던 '3개 구간 요청' 방식 그대로 복구 + 3개 결과를 구간별로 정밀 분할!
+        // 4. 3개 구간 요청 방식 + 구간별 정밀 분할
         let mainRouteData = {
             southOut: [],
             coreOut: [],
@@ -1674,14 +1680,9 @@
         let routeLayerGroup = L.layerGroup().addTo(map);
 
         function sliceAndBuildSegments(coordsPart1, coordsPart2, inboundCoords) {
-            // coordsPart1: S1 ~ S6 ~ S20 ~ S21(키홀 끝)
             const idxS6Out = findNearestIdx(coordsPart1, stops[6], 0);
             const idxS20Out = findNearestIdx(coordsPart1, stops[20], idxS6Out);
-
-            // coordsPart2: S21(키홀 끝) ~ S20(복귀) ~ S22 ~ S23(푸카)
             const idxS20Back = findNearestIdx(coordsPart2, stops[20], 0);
-
-            // inboundCoords: S23(푸카) ~ S6(이몰) ~ H0(탐비산) ~ S1(카그반)
             const idxS6In = findNearestIdx(inboundCoords, stops[6], 0);
 
             mainRouteData = {
@@ -1726,7 +1727,6 @@
         }
 
         async function buildOfficialGpsRoute() {
-            // 1) 이미 캐시에 도로 경로가 있으면 기다림 없이 0.001초 만에 즉시 그리기
             try {
                 const cached = localStorage.getItem(ROUTE_CACHE_KEY);
                 if (cached) {
@@ -1739,7 +1739,6 @@
                 }
             } catch (e) {}
 
-            // 2) 원래 완벽하게 작동하던 3개 구간 Waypoints 그대로 요청
             const outboundPart1 = [
                 stops[0], stops[1], stops[2], stops[4], stops[5],
                 stops[6], stops[7], stops[8], stops[9], stops[10],
@@ -1778,7 +1777,6 @@
                 sliceAndBuildSegments(coordsPart1, coordsPart2, inboundCoords);
                 applyOperationMode(currentMode, false);
             } catch (err) {
-                // 완전히 오프라인일 때만 비상용 연결
                 sliceAndBuildSegments(
                     outboundPart1.map(s => [s.lat, s.lng]),
                     outboundPart2.map(s => [s.lat, s.lng]),
@@ -1828,10 +1826,8 @@
             drawActiveSegment(mainRouteData.northEnd, mode);
             drawActiveSegment(mainRouteData.coreIn, mode);
 
-            if (mode === 'xpress') {
-                drawInactiveSegment(mainRouteData.southOut);
-                drawInactiveSegment(mainRouteData.southIn);
-            } else {
+            // 익스프레스 모드일 때는 남부 항구 구간 선도 아예 숨겨서 깔끔하게 표시!
+            if (mode !== 'xpress') {
                 drawActiveSegment(mainRouteData.southOut, mode);
                 drawActiveSegment(mainRouteData.southIn, mode);
             }
@@ -1855,36 +1851,40 @@
                 const cautionTagEl = document.getElementById(`caution-tag-${idx}`);
                 const xpressTagEl = document.getElementById(`xpress-tag-${idx}`);
 
-                let isClosedOrSkipped = false;
-                let closedReason = '';
+                // 1) 익스프레스 모드일 때: 미정차 정류장(16곳)은 회색이 아니라 아예 숨김(Hidden)!
+                const isHiddenInXpress = (mode === 'xpress' && !stop.isXpress);
 
-                if (mode === 'night' && stop.closesAtSunset) {
-                    isClosedOrSkipped = true;
-                    closedReason = t.reasonNightClosed;
-                } else if (mode === 'xpress' && !stop.isXpress) {
-                    isClosedOrSkipped = true;
-                    closedReason = stop.isSouthPortSection ? t.reasonPortSkipped : t.reasonPassThrough;
-                }
+                // 2) 야간 모드일 때: 일몰 후 마감되는 키홀(S21)은 회색 마감 표시
+                const isClosedAtNight = (mode === 'night' && stop.closesAtSunset);
 
+                // 3) 야간 모드일 때: 푸카비치(S23)와 탐비산(H0) 주의 배지 표시
                 const isNightCaution = (mode === 'night' && Boolean(stop.nightCautionKo));
 
                 if (itemEl) {
-                    itemEl.classList.toggle('closed-stop', isClosedOrSkipped);
+                    itemEl.classList.toggle('hidden-stop', isHiddenInXpress);
+                    itemEl.classList.toggle('closed-stop', isClosedAtNight);
                     itemEl.classList.toggle('caution-stop', isNightCaution);
                 }
                 if (dockBtnEl) {
-                    dockBtnEl.classList.toggle('closed-stop', isClosedOrSkipped);
+                    dockBtnEl.classList.toggle('hidden-stop', isHiddenInXpress);
+                    dockBtnEl.classList.toggle('closed-stop', isClosedAtNight);
                     dockBtnEl.classList.toggle('caution-stop', isNightCaution);
                 }
                 if (markerEl) {
-                    markerEl.classList.toggle('marker-closed', isClosedOrSkipped);
+                    markerEl.classList.toggle('marker-hidden', isHiddenInXpress);
+                    markerEl.classList.toggle('marker-closed', isClosedAtNight);
                     markerEl.classList.toggle('marker-caution', isNightCaution);
                 }
 
+                if (isHiddenInXpress) {
+                    markers[idx].closePopup();
+                    markers[idx].closeTooltip();
+                }
+
                 if (closedTagEl) {
-                    if (isClosedOrSkipped) {
+                    if (isClosedAtNight) {
                         closedTagEl.style.display = 'inline-block';
-                        closedTagEl.textContent = closedReason;
+                        closedTagEl.textContent = t.reasonNightClosed;
                     } else {
                         closedTagEl.style.display = 'none';
                     }
@@ -1974,7 +1974,7 @@
                         if (keyholeItem) keyholeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     } else if (selectedMode === 'xpress') {
                         const emallItem = document.getElementById('stop-item-6');
-                        if (emallItem) emallItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        if (emallItem) emallItem.scrollIntoView({ behavior: 'smooth', block: ' start' });
                     }
                 }
             });
@@ -2148,7 +2148,9 @@
 
         function fitAllBounds() {
             setFollowBus(false);
-            const bounds = L.latLngBounds(stops.map(s => [s.lat, s.lng]));
+            // 익스프레스 모드일 때는 표시 중인 익스프레스 정류장 8곳 기준으로 지도를 맞춤
+            const visibleStops = currentMode === 'xpress' ? stops.filter(s => s.isXpress) : stops;
+            const bounds = L.latLngBounds(visibleStops.map(s => [s.lat, s.lng]));
             map.flyToBounds(bounds, { padding: [45, 45], duration: 0.8 });
             map.closePopup();
             closeStopCard();
