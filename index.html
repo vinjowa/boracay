@@ -53,10 +53,38 @@
             align-items: center;
             justify-content: space-between;
             gap: 6px;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
         }
         #header h1 { font-size: 15px; text-align: left; white-space: nowrap; }
+        
+        .header-sub-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
         #header p { font-size: 10.5px; opacity: 0.95; text-align: left; }
+
+        /* 👥 데스크탑 방문자 수 배지 (오늘 / 전체) */
+        .visitor-badge-desk {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 2px 7px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #e0f2fe;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .visitor-badge-desk b {
+            color: #fde047;
+            font-family: monospace;
+            font-size: 10.5px;
+        }
 
         .header-right-actions {
             display: flex;
@@ -299,7 +327,6 @@
             background: #fef2f2;
             box-shadow: 0 2px 8px rgba(239,68,68,0.2);
         }
-        /* 야간 마감 정류장(키홀): 회색 처리 */
         .stop-item.closed-stop {
             background: #f1f5f9;
             border-color: #cbd5e1;
@@ -309,7 +336,6 @@
             text-decoration: line-through;
             color: #64748b;
         }
-        /* 익스프레스 미정차 정류장: 아예 안 보이게 완전 숨김! */
         .stop-item.hidden-stop {
             display: none !important;
         }
@@ -402,7 +428,7 @@
         #map { flex: 1; height: 100%; background: #a2d2ff; z-index: 1; }
 
         /* =========================================================
-           2. 하단 플로팅 알약 버튼 그룹 (버스 따라가기 + 실시간버스 + 조와부부 유튜브)
+           2. 하단 플로팅 알약 버튼 그룹 (버스 따라가기 + 실시간버스 + 조와부부 + 방문자수)
            ========================================================= */
         #bottom-pill-group {
             position: absolute;
@@ -453,6 +479,18 @@
             background: #0f172a;
             border-color: #ef4444;
         }
+        /* 모바일 하단 방문자 카운터 알약 */
+        #visitor-bottom-pill {
+            background: rgba(15, 23, 42, 0.85);
+            border-color: rgba(148, 163, 184, 0.45);
+            cursor: default;
+            font-size: 10.5px;
+            color: #e2e8f0;
+        }
+        #visitor-bottom-pill b {
+            color: #fde047;
+            font-family: monospace;
+        }
 
         /* =========================================================
            3. 모바일 전용 플로팅 UI (데스크탑에서는 숨김)
@@ -501,7 +539,6 @@
             transform: scale(0.85);
             text-shadow: none;
         }
-        /* 익스프레스 모드에서 미정차 정류장 마커 완전 숨김! */
         .custom-stop-marker.marker-hidden {
             display: none !important;
         }
@@ -565,12 +602,12 @@
             #bottom-pill-group {
                 left: 10px;
                 right: 62px;
-                bottom: 20px;
+                bottom: 16px;
                 gap: 5px;
             }
             .bottom-pill-btn {
-                padding: 6px 9px;
-                font-size: 10.5px;
+                padding: 5.5px 8.5px;
+                font-size: 10px;
             }
             body.card-open #bottom-pill-group {
                 bottom: 146px;
@@ -743,7 +780,6 @@
                 opacity: 0.4;
                 text-shadow: none;
             }
-            /* 익스프레스 미정차 번호 버튼 완전 숨김! */
             .dock-stop-btn.hidden-stop {
                 display: none !important;
             }
@@ -879,7 +915,13 @@
                     <button id="langBtnDesktop" class="lang-btn">🌐 EN</button>
                 </div>
             </div>
-            <p id="ui-header-sub">시간대/버스 종류를 선택하면 실제 운행 구간이 표시됩니다</p>
+            <div class="header-sub-row">
+                <p id="ui-header-sub">시간대/버스 종류 선택 시 운행 구간 표시</p>
+                <!-- 👥 데스크탑 방문자 카운터 배지 -->
+                <div class="visitor-badge-desk" title="방문자 수 (오늘 / 누적)">
+                    👥 <span id="ui-vis-today-label">오늘</span> <b id="vis-today-desk">-</b> · <span id="ui-vis-total-label">전체</span> <b id="vis-total-desk">-</b>
+                </div>
+            </div>
         </div>
 
         <div id="mode-selector">
@@ -893,7 +935,7 @@
             </button>
             <button class="mode-btn" data-mode="xpress" id="desk-mode-xpress">
                 ⚡ 익스프레스만
-                <small>~17:00 (S6~푸카 8곳)</small>
+                <small>~17:00 (핵심 8곳만 표시)</small>
             </button>
         </div>
 
@@ -926,7 +968,7 @@
     <!-- 🗺️ 2. 지도 영역 -->
     <div id="map"></div>
 
-    <!-- 🎯 하단 플로팅 알약 버튼 (버스 따라가기 + 실시간 실제버스 + 조와부부 유튜브 채널) -->
+    <!-- 🎯 하단 플로팅 알약 버튼 (버스 따라가기 + 실시간 실제버스 + 조와부부 유튜브 + 방문자 카운터) -->
     <div id="bottom-pill-group">
         <button id="follow-bus-pill" class="bottom-pill-btn following">🎯 따라가기 ON</button>
         <a href="https://tinyurl.com/findHOHO" target="_blank" rel="noopener noreferrer" id="live-bus-pill" class="bottom-pill-btn">
@@ -940,6 +982,9 @@
             </svg>
             <span id="ui-yt-mob">조와부부</span>
         </a>
+        <div id="visitor-bottom-pill" class="bottom-pill-btn" title="오늘 방문자 / 전체 누적 방문자">
+            👥 <b id="vis-today-mob">-</b> / <b id="vis-total-mob">-</b>
+        </div>
     </div>
 
     <!-- 📱 3. 모바일 전용 플로팅 UI (핸드폰에서만 표시) -->
@@ -989,7 +1034,9 @@
         const i18n = {
             ko: {
                 headerTitle: "🚌 보라카이 HOHO 노선도",
-                headerSub: "시간대/버스 종류를 선택하면 실제 운행 구간이 표시됩니다",
+                headerSub: "시간대/버스 종류 선택 시 운행 구간 표시",
+                visToday: "오늘",
+                visTotal: "전체",
                 mobTitle: "보라카이",
                 ytTitle: "조와부부",
                 langBtnText: "🌐 EN",
@@ -1033,7 +1080,9 @@
             },
             en: {
                 headerTitle: "🚌 Boracay HOHO Map",
-                headerSub: "Select time or bus type to view active stops & routes",
+                headerSub: "Select time or bus type to view active routes",
+                visToday: "Today",
+                visTotal: "Total",
                 mobTitle: "HOHO",
                 ytTitle: "Jowa Couple",
                 langBtnText: "🌐 KR",
@@ -1826,7 +1875,6 @@
             drawActiveSegment(mainRouteData.northEnd, mode);
             drawActiveSegment(mainRouteData.coreIn, mode);
 
-            // 익스프레스 모드일 때는 남부 항구 구간 선도 아예 숨겨서 깔끔하게 표시!
             if (mode !== 'xpress') {
                 drawActiveSegment(mainRouteData.southOut, mode);
                 drawActiveSegment(mainRouteData.southIn, mode);
@@ -1851,13 +1899,8 @@
                 const cautionTagEl = document.getElementById(`caution-tag-${idx}`);
                 const xpressTagEl = document.getElementById(`xpress-tag-${idx}`);
 
-                // 1) 익스프레스 모드일 때: 미정차 정류장(16곳)은 회색이 아니라 아예 숨김(Hidden)!
                 const isHiddenInXpress = (mode === 'xpress' && !stop.isXpress);
-
-                // 2) 야간 모드일 때: 일몰 후 마감되는 키홀(S21)은 회색 마감 표시
                 const isClosedAtNight = (mode === 'night' && stop.closesAtSunset);
-
-                // 3) 야간 모드일 때: 푸카비치(S23)와 탐비산(H0) 주의 배지 표시
                 const isNightCaution = (mode === 'night' && Boolean(stop.nightCautionKo));
 
                 if (itemEl) {
@@ -1974,7 +2017,7 @@
                         if (keyholeItem) keyholeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     } else if (selectedMode === 'xpress') {
                         const emallItem = document.getElementById('stop-item-6');
-                        if (emallItem) emallItem.scrollIntoView({ behavior: 'smooth', block: ' start' });
+                        if (emallItem) emallItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 }
             });
@@ -1987,6 +2030,8 @@
 
             document.getElementById('ui-header-title').textContent = t.headerTitle;
             document.getElementById('ui-header-sub').textContent = t.headerSub;
+            document.getElementById('ui-vis-today-label').textContent = t.visToday;
+            document.getElementById('ui-vis-total-label').textContent = t.visTotal;
             document.getElementById('ui-mob-title').textContent = t.mobTitle;
             document.getElementById('ui-yt-desk').textContent = t.ytTitle;
             document.getElementById('ui-yt-mob').textContent = t.ytTitle;
@@ -2095,10 +2140,56 @@
             animFrameId = requestAnimationFrame(animateBus);
         }
 
+        // 👥 7. 방문자 카운터 (오늘 / 전체 누적) - 백그라운드 비동기 집계
+        async function initVisitorCounter() {
+            const namespace = 'jowa_boracay_hoho_map_v1';
+            // 한국/필리핀 시간대 기준 오늘 날짜 (YYYY-MM-DD) 생성
+            const now = new Date();
+            const kstOffset = 9 * 60 * 60 * 1000;
+            const todayStr = new Date(now.getTime() + kstOffset).toISOString().slice(0, 10);
+
+            const sessionKey = `visited_${todayStr}`;
+            const alreadyVisited = sessionStorage.getItem(sessionKey);
+
+            // 같은 세션 내 새로고침이면 조회만 하고, 첫 방문이면 +1 증가(/up)
+            const totalUrl = alreadyVisited
+                ? `https://api.counterapi.dev/v1/${namespace}/total`
+                : `https://api.counterapi.dev/v1/${namespace}/total/up`;
+            const todayUrl = alreadyVisited
+                ? `https://api.counterapi.dev/v1/${namespace}/day_${todayStr}`
+                : `https://api.counterapi.dev/v1/${namespace}/day_${todayStr}/up`;
+
+            try {
+                const [totalRes, todayRes] = await Promise.all([
+                    fetch(totalUrl).then(r => r.json()).catch(() => null),
+                    fetch(todayUrl).then(r => r.json()).catch(() => null)
+                ]);
+
+                if (!alreadyVisited && (totalRes || todayRes)) {
+                    sessionStorage.setItem(sessionKey, '1');
+                }
+
+                const totalCount = (totalRes && typeof totalRes.count === 'number') ? totalRes.count : 1;
+                const todayCount = (todayRes && typeof todayRes.count === 'number') ? todayRes.count : 1;
+
+                document.getElementById('vis-today-desk').textContent = todayCount.toLocaleString();
+                document.getElementById('vis-total-desk').textContent = totalCount.toLocaleString();
+                document.getElementById('vis-today-mob').textContent = todayCount.toLocaleString();
+                document.getElementById('vis-total-mob').textContent = totalCount.toLocaleString();
+            } catch (e) {
+                // 광고 차단기 등으로 차단될 경우 기본값 표시
+                document.getElementById('vis-today-desk').textContent = '1';
+                document.getElementById('vis-total-desk').textContent = '1';
+                document.getElementById('vis-today-mob').textContent = '1';
+                document.getElementById('vis-total-mob').textContent = '1';
+            }
+        }
+
         highlightStop(0, false);
         buildOfficialGpsRoute();
+        initVisitorCounter();
 
-        // 7. 데스크탑 & 모바일 컨트롤 버튼 동기화
+        // 8. 데스크탑 & 모바일 컨트롤 버튼 동기화
         const playBtnDesktop = document.getElementById('playBtnDesktop');
         const speedBtnDesktop = document.getElementById('speedBtnDesktop');
         const myLocBtnDesktop = document.getElementById('myLocBtnDesktop');
@@ -2148,7 +2239,6 @@
 
         function fitAllBounds() {
             setFollowBus(false);
-            // 익스프레스 모드일 때는 표시 중인 익스프레스 정류장 8곳 기준으로 지도를 맞춤
             const visibleStops = currentMode === 'xpress' ? stops.filter(s => s.isXpress) : stops;
             const bounds = L.latLngBounds(visibleStops.map(s => [s.lat, s.lng]));
             map.flyToBounds(bounds, { padding: [45, 45], duration: 0.8 });
